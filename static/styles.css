@@ -1,0 +1,1286 @@
+
+body{font-family:Arial;background:#efe4fb;margin:0;text-align:center}
+body{
+  max-width:480px;
+  margin:0 auto;
+
+  overflow-x:hidden;
+
+  touch-action:pan-y;
+}
+
+html{
+  overflow-x:hidden;
+
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+
+#content {
+
+  padding-left: 2px;
+  padding-right: 2px;
+
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 60%;
+  max-width: 250px;   /* keeps it from getting huge on desktop */
+  margin: 10px auto -26px auto;
+  display: block;
+}
+
+/* Base button style (wood sign look) */
+button {
+  display: block;
+  width: 80%;
+  margin: 10px auto;
+  padding: 14px;
+
+  font-size: 17px;
+  color: white;
+  border: none;
+  border-radius: 12px;
+
+  background: linear-gradient(#a47148, #8b5a2b);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+
+  text-align: center;
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.card{
+ background:white;margin:10px;padding:10px;border-radius:12px;
+ box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+
+.pin{
+  position:absolute;
+  width:14px;
+  height:14px;
+  background:red;
+  border-radius:50%;
+  transform: translate(-50%, -50%);
+}
+
+.zone{
+  position: absolute;
+  background: rgba(0,0,0,0); /* invisible */
+}
+
+/* horizontal button groups */
+.row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px auto;
+  width: 80%;              /* keeps group centered */
+}
+
+/* Make buttons share space evenly but keep wood style */
+.row button {
+  flex: 1;
+  margin: 0;               /* remove vertical stacking margin */
+  width: auto;             /* override block width */
+}
+
+/* spacing below main menu */
+.content-spacer {
+  height: 20px;
+}
+
+.menu {
+  margin-bottom: 20px;     /* space before content */
+}
+
+#galleryMap{
+
+  width:96%;
+
+  height:516px;
+
+  margin:0 auto;
+
+  border-radius:12px 12px 12px 12px;
+
+  overflow:hidden;
+
+  border:3px solid #8b5a2b;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.3);
+}
+
+.gallery-button-row{
+
+  width:92%;
+
+  margin:0 auto -3px auto;
+
+  display:flex;
+
+  gap:0;
+
+  position:relative;
+
+  z-index:10;
+}
+
+.gallery-btn{
+
+  flex:1;
+
+  margin:0;
+
+  width:auto;
+
+  padding:6px 4px;
+
+  font-size:14px;
+
+  border-radius:12px 12px 0 0;
+
+  box-shadow:none;
+
+  position:relative;
+}
+
+.gallery-btn.active{
+
+  background:
+    linear-gradient(
+      #3f6f24,
+      #355d1d
+    );
+
+  z-index:20;
+}
+
+.leaflet-container {
+  background: #ffffff;
+  font-family: Arial;
+}
+
+.leaflet-popup-content{
+
+  margin: 2px 2px;
+  font-size: 1.2rem;
+  line-height: 1;
+  text-align:center;
+}
+
+.leaflet-popup-content b{
+
+
+  font-size:1.15rem;
+  text-align:center;
+}
+
+.leaflet-popup-content-wrapper{
+
+  max-width: 170px;
+}
+
+.sponsor {
+  text-align: center;
+}
+
+.sponsor-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+/* Alert toggle state */
+.alert-btn.active {
+  background: linear-gradient(#2e7d32, #1b5e20); /* dark green */
+}
+
+.sponsor-name {
+  display: block;
+  margin-top: 6px;
+}
+
+.subtitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #5a4a3f;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+
+.card.active-event {
+  border: 2px solid #2e7d32;
+  background: #f1f8f4;
+}
+
+.alert-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;                 /* was 18px */
+  width:85%;                /* slightly narrower */
+  max-width:380px;          /* tighter layout */
+  margin:12px auto;
+}
+
+.icon-card img{
+  width:64px;               /* was 80px */
+  height:64px;
+}
+
+.icon-card div{
+  margin-top:2px;           /* tighter spacing */
+  font-size:14px;
+}
+
+.logo-center img{
+  width:76px;
+  height:76px;
+}
+
+.icon-card {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.icon-card img {
+  pointer-events: none;        /* 🔴 KEY FIX */
+  -webkit-user-drag: none;
+}
+
+.ios-note {
+  background: #fff8e1;
+  border: 2px dashed #c8a96a;
+}
+
+/* Footer logo */
+#footerLogo {
+  width: 100%;
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+#footerLogo img {
+  width: 55px;              /* small size */
+  opacity: 0.85;
+}
+
+#footerLogo img:active {
+  transform: scale(0.95);
+}
+
+.footer-text {
+  font-size: 8px;        /* ~8pt equivalent on mobile */
+  color: #666;
+  margin-top: 5px;
+}
+
+.icon-card {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.static-page {
+  text-align: left;
+  line-height: 1.2;
+}
+
+.card.changed-event {
+  background: #fff8dc;   /* light yellow */
+  border: 2px solid #e6c200;
+}
+
+.card.cancelled-event {
+  background: #fdecea;   /* light red */
+  border: 2px solid #d32f2f;
+}
+
+
+.ui-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 12px;
+  margin-bottom: 12px;
+
+  border-radius: 14px;
+  background: #ffffff;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* LEFT IMAGE */
+.ui-card-media {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* RIGHT CONTENT */
+.ui-card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  text-align: left;
+}
+
+/* TITLE */
+.ui-card-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 1px;
+}
+
+/* BODY TEXT */
+.ui-card-body {
+  font-size: 0.96rem;
+  margin-top: 1px;
+}
+
+/* PRESERVE EMPTY LINE */
+.ui-card-body:empty {
+  height: 0.6em;
+}
+
+/* BUTTON AREA */
+.ui-card {
+  display: flex;
+  align-items: center;       /* 🔥 key fix for icon alignment */
+  flex-wrap: wrap;           /* 🔥 allows button to drop below */
+}
+
+.ui-card-actions {
+  width: 96%;
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* stacked event buttons */
+.stacked-actions {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ticket button matches alert button sizing */
+.ticket-btn {
+  width: 140px;
+  background: linear-gradient(#a47148, #8b5a2b);
+  color: white;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.ui-card-actions .alert-btn {
+  width: 160px;
+}
+
+/* BUTTON */
+.alert-btn {
+  background: #9c6b30;
+  color: white;
+  border: none;
+  padding: 4px 4px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.ui-card.no-media {
+  padding-left: 8px;
+}
+
+.ui-card.no-media .ui-card-media {
+  display: none;
+}
+
+.ui-card-body button {
+  width: auto;
+  max-width: 160px;
+  white-space: normal;
+}
+
+/* PUSH CARD LAYOUT */
+.push-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* LEFT COLUMN */
+.push-title {
+  font-weight: bold;
+  font-size: 1.3rem;
+  min-width: 110px;
+}
+
+/* MIDDLE COLUMN */
+.push-text {
+  flex: 1;
+  text-align: left;
+  font-size: 1rem;
+}
+
+/* RIGHT COLUMN */
+.push-action {
+  display: flex;
+  justify-content: center;
+}
+
+/* FIX BUTTON WIDTH INSIDE PUSH CARD */
+.push-action button {
+  width: 140px;
+}
+
+/* 🔥 FORCE TRUE 3-COLUMN LAYOUT */
+.push-card {
+  flex-wrap: nowrap;              /* ✅ overrides ui-card wrap */
+  align-items: center;
+}
+
+/* LEFT: title */
+.push-title {
+  flex: 0 0 110px;               /* fixed width column */
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+/* MIDDLE: text */
+.push-text {
+  flex: 1;                       /* fills remaining space */
+  text-align: left;
+}
+
+/* RIGHT: button */
+.push-action {
+  flex: 0 0 auto;                /* stays right */
+}
+
+/* keep button contained */
+.push-action button {
+  width: 140px;
+}
+
+.ios-note .push-text {
+  font-weight: 500;
+}
+
+/* Fix install button width inside push card */
+.push-action button {
+  width: 140px;
+}
+
+.install-guide img {
+  width: 100%;
+  max-width: 300px;
+  margin: 8px auto 16px auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.install-guide p {
+  text-align: left;
+  margin: 6px 0;
+}
+
+.static-page .alert-btn {
+  width: auto;
+  max-width: 180px;
+  padding: 4px 4px;
+}
+
+.poi-content {
+  -webkit-user-select: none;
+  user-select: none;
+
+  -webkit-touch-callout: none;   /* 🍎 stops iOS popup */
+}
+
+.vote-header {
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.vote-list {
+  display: none;
+}
+
+.vote-list.active {
+  display: block;
+}
+
+.vote-option {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.vote-option.selected {
+  background: #f4e7d3;
+  border-left: 4px solid #8b5a2b;
+}
+
+/* --- VOTE CARDS --- */
+.vote-card {
+  cursor: pointer;
+}
+
+.placeholder {
+  color: #777;
+  font-style: italic;
+}
+
+/* --- MODAL --- */
+.vote-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vote-modal-content {
+  width: 90%;
+  max-width: 400px;
+  max-height: 80%;
+  overflow-y: auto;
+
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vote-modal-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.vote-search {
+  width: 95%;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+/* --- LIST ITEMS --- */
+.vote-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.vote-item.selected {
+  background: #f4e7d3;
+  border-left: 6px solid #8b5a2b;
+  font-weight: bold;
+}
+
+/* --- RESULTS CARD LAYOUT --- */
+
+.vote-result-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.vote-result-title {
+  font-size: 1.1rem;
+}
+
+.vote-result-votes {
+  font-size: 0.95rem;
+}
+
+.vote-result-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.vote-result-row {
+  display: flex;
+  align-items: flex-start;   /* top-align wrapped rows */
+  gap: 6px;
+  font-size: 0.95rem;
+  margin: 3px 0;
+}
+
+.vote-result-count {
+  flex: 0 0 28px;
+  text-align: right;
+  margin-right: 16px;
+}
+
+.ui-card-body {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.96rem;
+  color: #333;
+}
+
+.placeholder {
+  color: #8a8a8a;
+  font-style: italic;
+  display: block;
+}
+
+.ui-card-body {
+  margin-left: 2px;
+}
+
+.vote-rank {
+  flex: 0 0 2.2em;      /* fixed ranking column */
+  text-align: right;
+  font-weight: bold;
+}
+
+.vote-result-header {
+  padding-left: 2px;
+}
+
+.vote-results-heading {
+  font-size: 1.3rem;   /* ~10–15% smaller */
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.vote-result-card .ui-card-content {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.vote-thanks {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #8b5a2b;   /* matches your wood theme */
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.vote-thanks-note {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #8b5a2b;   /* matches your wood theme */
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.vote-card {
+  align-items: flex-start;   /* ⬅️ key fix */
+}
+
+.vote-submit-btn {
+  width: 70%;   /* ~10% narrower than default 80% */
+}
+
+.vote-card .ui-card-actions {
+  flex-basis: 100%;     /* 🔥 forces it onto its own row */
+  display: flex;
+  justify-content: center;
+  margin-top: -12px;
+}
+
+.vote-card .ui-card-content {
+  justify-content: flex-start;
+}
+
+.vote-card .placeholder {
+  color: #666;
+  font-style: italic;
+  margin-top: 2px;   /* 🔥 THIS is what makes it visible */
+}
+
+/* Selected vendor name / <None Selected> */
+.vote-card .ui-card-body {
+  font-size: 1.08rem;     /* larger */
+  font-weight: bold;      /* bold */
+}
+
+.vote-card .placeholder {
+  font-size: 1.08rem;     /* same size */
+  font-weight: bold;
+}
+
+.vote-card {
+  padding: 10px 10px;
+}
+
+.vote-note {
+  font-size: 0.9rem;
+  color: #6b5b4a;
+  margin-bottom: 8px;
+}
+
+.vote-card .ui-card-body:empty {
+  height: 0.3em;   /* cut spacer in half */
+}
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;   /* ⬅️ KEY: pushes left/right out */
+  width: 90%;
+  max-width: 380px;
+  margin: 0 auto;
+  gap: 4px;
+}
+
+/* left + right text */
+.footer-side {
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+  white-space: nowrap;
+  flex: 1;                         /* ⬅️ allows proper spacing */
+}
+
+/* force alignment */
+.footer-side.left {
+  text-align: right;               /* pulls toward logo */
+  padding-right: 6px;
+}
+
+.footer-side.right {
+  text-align: left;
+  padding-left: 6px;
+}
+
+/* center logo */
+#footerLogo img {
+  width: 42px;                     /* slightly smaller to fit row */
+  flex: 0 0 auto;                 /* ⬅️ prevents stretching */
+}
+
+.survey-options {
+  display: flex;
+  flex-wrap: wrap;
+
+  column-gap: 6px;   /* keep horizontal spacing */
+  row-gap: 4px;      /* 🔥 reduced ~25–30% vertically */
+
+  margin-top: 6px;
+}
+
+.survey-btn {
+  background: linear-gradient(#a47148, #8b5a2b);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.survey-btn.active {
+  background: linear-gradient(#2e7d32, #1b5e20);
+}
+
+.survey-comment {
+  width: 95%;
+  height: 80px;
+  margin-top: 6px;
+}
+
+.coupon-card {
+  border: 2px dashed #8b5a2b;
+}
+
+.coupon-amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.small-note {
+  font-size: 0.7rem;
+  margin-top: 6px;
+}
+
+.coupon-card {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+/* BIG coupon layout */
+.coupon-large {
+  flex-direction: column;
+  text-align: center;
+  padding: 20px 10px;
+  border: 4px dashed #8b5a2b;   /* 🔥 thicker border */
+}
+
+/* LARGE LOGO (branding focus) */
+.coupon-logo {
+  width: 50%;
+  max-width: 220px;
+  margin: 0 auto 10px auto;
+}
+
+/* MAIN VALUE TEXT */
+.coupon-amount {
+  font-size: 2.5rem;        /* 🔥 ~2x bigger */
+  font-weight: bold;
+  color: #8b5a2b;
+  margin-top: -12px;
+}
+
+/* LOCATION TEXT */
+.coupon-location {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: -6px;
+}
+
+/* INSTRUCTION TEXT */
+.coupon-note {
+  font-size: 1rem;
+  margin-top: 10px;
+}
+
+.coupon-large {
+  background: #fffdf7; /* slight warm paper tone */
+}
+
+.faq-search {
+  width: 80%;
+  padding: 10px;
+  margin: 10px auto 6px auto;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* ---------------- TASTING ---------------- */
+
+.taste-card {
+  align-items: center;
+}
+
+.taste-media {
+  align-self: center;
+}
+
+.taste-extra {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #8b5a2b;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.taste-card a {
+  word-break: break-word;
+}
+
+/* ---------------- FEATURED MENU ROW ---------------- */
+
+.featured-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 8px 4px 8px 6px;
+  border-radius: 20px;
+
+  /* slightly darker for outdoor sunlight visibility */
+  background: #e3d7ef;
+
+  /* subtle depth */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    0 1px 4px rgba(0,0,0,0.06);
+
+  border: 1px solid rgba(0,0,0,0.04);
+  margin-bottom: 0px;
+}
+
+.featured-row .icon-card {
+  transform: translateY(-1px);
+}
+
+.parade-card {
+    text-align: center;
+    padding: 0px 0px 0px;
+}
+
+/* Title */
+.parade-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+
+/* Subtitle */
+.parade-subtitle {
+    font-size: 0.96rem;
+    line-height: 1.2;
+    margin-bottom: 12px;
+}
+
+/* Image wrapper */
+.parade-map-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 3px solid #9a6b23;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.18);
+    background: #f5f5f5;
+}
+
+/* Actual image */
+.parade-map {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* EVENT CARD */
+.event-card {
+  align-items: flex-start;
+}
+
+/* TICKET BUTTON ROW */
+.ticket-actions {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -2px;
+}
+
+/* BUY TICKETS BUTTON */
+.ticket-btn {
+  width: 60%;
+  max-width: 320px;
+  background: #9c6b10;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* BUTTON PRESS */
+.ticket-btn:active {
+  transform: translateY(1px);
+}
+
+/* INSTALL APP BUTTON */
+
+#installContainer {
+  position: absolute;
+  top: 10px;
+  right: 2px;
+  width: 72px;
+  text-align: center;
+  z-index: 100;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#installButton {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+#installButton img {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+#installLabel {
+  font-size: 11px;
+  font-weight: bold;
+  color: #5b4636;
+  line-height: 1.0;
+  margin-top: 4px;
+}
+
+/* iOS INSTALL OVERLAY */
+
+#iosInstallOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 99999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: calc(env(safe-area-inset-top) + 12px);
+}
+
+.ios-install-sheet {
+  width: 100%;
+  max-width: 420px;
+  background: #f3efe6;
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 22px 20px 28px;
+  text-align: center;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+}
+
+.ios-install-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 18px;
+  color: #5b4636;
+}
+
+.ios-install-step {
+  font-size: 18px;
+  margin-top: 14px;
+  color: #333;
+}
+
+.ios-install-share {
+  font-size: 48px;
+  margin: 10px 0;
+}
+
+.ios-install-close {
+  margin-top: 24px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  background: #8b5a2b;
+  color: white;
+  font-size: 18px;
+}
+
+.map-poi-icon {
+  background: #f5c400;
+  border: 2px solid #8b5a2b;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  line-height: 24px;
+  text-align: center;
+  font-weight: bold;
+  color: black;
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.35);
+}
+
+/* ==========================================
+   TICKET PAGE HEADER
+   ========================================== */
+
+.ticket-header {
+  position: relative;
+  width: 100%;
+  margin: 10px 0 30px 0;
+  aspect-ratio: 3.57 / 1;
+  overflow: hidden;
+}
+
+/* ticket image */
+
+.ticket-header-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+/* content overlay */
+
+.ticket-header-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+/* logo area */
+
+.ticket-header-logo {
+  width: 80px;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12px;
+}
+
+.ticket-header-logo img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+/* text area */
+
+.ticket-header-text {
+  flex: 1;
+  text-align: left;
+  padding-left: 14px;
+  padding-right: 48px;
+}
+
+/* title */
+
+.ticket-header-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  line-height: 1.0;
+  color: #9a6b23;
+}
+
+/* subtitle */
+
+.ticket-header-subtitle {
+  margin-top: 4px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  line-height: 1.1;
+  color: #000;
+}
+
+/* vertical date */
+
+.ticket-header-date {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  font-size: 0.92rem;
+  font-weight: normal;
+  color: #333;
+  white-space: nowrap;
+}
+
+.gps-status {
+  width: 96%;
+  margin: -16px auto 12px auto;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #5b4636;
+}
+
+.vote-card .ui-card-title{
+    font-size:1.3rem;
+}
+
+.vote-result-title{
+    font-size:1.25rem;
+}
+
+.vote-result-votes{
+    font-size:1.1rem;
+}
+
+.vote-result-row{
+    font-size:1.1rem;
+}
+
+.vote-card .ui-card-body,
+.vote-card .placeholder{
+    font-size:1.15rem;
+}
+
+.facebook-browser-sheet{
+
+    width:90%;
+    max-width:390px;
+
+    background:white;
+
+    border-radius:14px;
+
+    padding:22px;
+
+    box-sizing:border-box;
+
+    text-align:center;
+
+    animation:fadeIn .2s ease;
+}
+
+.facebook-browser-title{
+
+    font-size:1.5rem;
+
+    font-weight:bold;
+
+    color:#8b5a2b;
+
+    margin-bottom:18px;
+}
+
+.facebook-browser-text{
+
+    font-size:1.05rem;
+
+    line-height:1.45;
+
+    color:#333;
+
+    margin-bottom:22px;
+}
+
+.facebook-browser-close{
+
+    width:70%;
+}
