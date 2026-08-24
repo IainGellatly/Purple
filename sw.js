@@ -1,4 +1,4 @@
-const APP_VERSION = 70;
+const APP_VERSION = 130;
 
 self.addEventListener("message", event => {
 
@@ -23,7 +23,10 @@ const APP_SHELL = [
   "/static/app.js",
   "/static/cache.js",
   "/static/styles.css",
-  "/static/manifest.webmanifest"
+  "/static/manifest.webmanifest",
+  "/static/explore_db.js",
+  "/static/explore_keyboard.js",
+  "/static/explore_app.js"
 ];
 
 self.addEventListener("install", event => {
@@ -38,13 +41,13 @@ self.addEventListener("install", event => {
 
             const fetchUrl =
                 (file === "/")
-                    ? file
-                    : `${file}?v=${APP_VERSION}`;
+                    ? `${file}?_=${Date.now()}`
+                    : `${file}?v=${APP_VERSION}&_=${Date.now()}`;
 
             console.log("Caching:", fetchUrl);
 
             const response = await fetch(fetchUrl, {
-                cache: "reload"
+                cache: "no-store"
             });
 
             await cache.put(file, response.clone());
@@ -92,7 +95,10 @@ self.addEventListener("fetch", event => {
         url.pathname === "/static/app.js" ||
         url.pathname === "/static/cache.js" ||
         url.pathname === "/static/styles.css" ||
-        url.pathname === "/static/manifest.webmanifest"
+        url.pathname === "/static/manifest.webmanifest" ||
+        url.pathname === "/static/explore_db.js" ||
+        url.pathname === "/static/explore_keyboard.js" ||
+        url.pathname === "/static/explore_app.js"
     ) {
 
         event.respondWith((async () => {

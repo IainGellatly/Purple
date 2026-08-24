@@ -1,4 +1,3 @@
-
 body{font-family:Arial;background:#efe4fb;margin:0;text-align:center}
 body{
   max-width:480px;
@@ -16,6 +15,10 @@ html{
   text-size-adjust:100%;
 }
 
+h2{
+   color: #5c249c;
+}
+
 #content {
 
   padding-left: 2px;
@@ -25,9 +28,9 @@ html{
 }
 
 .logo {
-  width: 60%;
-  max-width: 250px;   /* keeps it from getting huge on desktop */
-  margin: 10px auto -26px auto;
+  width: 68%;
+  max-width: 280px;   /* keeps it from getting huge on desktop */
+  margin: 33px auto -18px auto;
   display: block;
 }
 
@@ -43,7 +46,7 @@ button {
   border: none;
   border-radius: 12px;
 
-  background: linear-gradient(#a47148, #8b5a2b);
+  background: #5c249c;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
 
   text-align: center;
@@ -110,7 +113,7 @@ button:active {
 
   overflow:hidden;
 
-  border:3px solid #8b5a2b;
+  border:3px solid #5c249c;
 
   box-shadow:
     0 4px 10px rgba(0,0,0,0.3);
@@ -199,7 +202,7 @@ button:active {
 
 /* Alert toggle state */
 .alert-btn.active {
-  background: linear-gradient(#2e7d32, #1b5e20); /* dark green */
+  background: #01b19d;
 }
 
 .sponsor-name {
@@ -283,8 +286,8 @@ button:active {
 }
 
 .footer-text {
-  font-size: 8px;        /* ~8pt equivalent on mobile */
-  color: #666;
+  font-size: 10px;        /* ~8pt equivalent on mobile */
+  color: #5c249c;
   margin-top: 5px;
 }
 
@@ -354,6 +357,7 @@ button:active {
   font-weight: bold;
   font-size: 1.2rem;
   margin-bottom: 1px;
+  color: #5c249c;
 }
 
 /* BODY TEXT */
@@ -405,7 +409,7 @@ button:active {
 
 /* BUTTON */
 .alert-btn {
-  background: #9c6b30;
+  background: #5c249c;
   color: white;
   border: none;
   padding: 4px 4px;
@@ -544,7 +548,7 @@ button:active {
 }
 
 .vote-option.selected {
-  background: #f4e7d3;
+  background: #01b19d;
   border-left: 4px solid #8b5a2b;
 }
 
@@ -610,7 +614,7 @@ button:active {
 }
 
 .vote-item.selected {
-  background: #f4e7d3;
+  background: #01b19d;
   border-left: 6px solid #8b5a2b;
   font-weight: bold;
 }
@@ -771,9 +775,9 @@ button:active {
 
 /* left + right text */
 .footer-side {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
-  color: #555;
+  color: #5c249c;
   white-space: nowrap;
   flex: 1;                         /* ⬅️ allows proper spacing */
 }
@@ -806,7 +810,7 @@ button:active {
 }
 
 .survey-btn {
-  background: linear-gradient(#a47148, #8b5a2b);
+  background: #5c249c;
   border-radius: 8px;
   padding: 6px 10px;
   color: white;
@@ -816,7 +820,7 @@ button:active {
 }
 
 .survey-btn.active {
-  background: linear-gradient(#2e7d32, #1b5e20);
+  background: #01b19d;
 }
 
 .survey-comment {
@@ -826,7 +830,7 @@ button:active {
 }
 
 .coupon-card {
-  border: 2px dashed #8b5a2b;
+  border: 2px dashed #5c249c;
 }
 
 .coupon-amount {
@@ -849,7 +853,7 @@ button:active {
   flex-direction: column;
   text-align: center;
   padding: 20px 10px;
-  border: 4px dashed #8b5a2b;   /* 🔥 thicker border */
+  border: 4px dashed #5c249c;   /* 🔥 thicker border */
 }
 
 /* LARGE LOGO (branding focus) */
@@ -863,15 +867,15 @@ button:active {
 .coupon-amount {
   font-size: 2.5rem;        /* 🔥 ~2x bigger */
   font-weight: bold;
-  color: #8b5a2b;
+  color: #5c249c;
   margin-top: -12px;
 }
 
 /* LOCATION TEXT */
 .coupon-location {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: bold;
-  margin-top: -6px;
+  margin-top: -10px;
 }
 
 /* INSTRUCTION TEXT */
@@ -952,6 +956,7 @@ button:active {
     font-weight: 700;
     line-height: 1.1;
     margin-bottom: 12px;
+    color: #5c249c;
 }
 
 /* Subtitle */
@@ -968,10 +973,10 @@ button:active {
     align-items: center;
     overflow: hidden;
     border-radius: 20px;
-    border: 3px solid #9a6b23;
+    border: 3px solid #5c249c;
     box-shadow:
         0 3px 8px rgba(0,0,0,0.18);
-    background: #f5f5f5;
+    background: #ffffff;
 }
 
 /* Actual image */
@@ -1099,7 +1104,7 @@ button:active {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: #8b5a2b;
+  background: #5c249c;
   color: white;
   font-size: 18px;
 }
@@ -1173,40 +1178,40 @@ button:active {
 .ticket-header-text {
   flex: 1;
   text-align: left;
-  padding-left: 14px;
-  padding-right: 48px;
+  padding-left: 10px;
+  padding-right: 42px;
 }
 
 /* title */
 
 .ticket-header-title {
-  font-size: 1.8rem;
+  font-size: 1.65rem;
   font-weight: bold;
   line-height: 1.0;
-  color: #9a6b23;
+  color: #efd279;
 }
 
 /* subtitle */
 
 .ticket-header-subtitle {
   margin-top: 4px;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: bold;
   line-height: 1.1;
-  color: #000;
+  color: #01b19d;
 }
 
 /* vertical date */
 
 .ticket-header-date {
   position: absolute;
-  right: 16px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%) rotate(180deg);
   writing-mode: vertical-rl;
   font-size: 0.92rem;
   font-weight: normal;
-  color: #333;
+  color: #ffffff;
   white-space: nowrap;
 }
 
@@ -1214,9 +1219,9 @@ button:active {
   width: 96%;
   margin: -16px auto 12px auto;
   text-align: center;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
-  color: #5b4636;
+  color: #5c249c;
 }
 
 .vote-card .ui-card-title{
@@ -1283,4 +1288,805 @@ button:active {
 .facebook-browser-close{
 
     width:70%;
+}
+
+
+/* ---------- Explore Search Controls ------------ */
+
+ .search-row{
+    width:98%;
+    max-width:500px;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:8px auto;
+}
+
+.search-controls{
+    flex:1 1 auto;
+    min-width:0;
+    height:90px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    box-sizing:border-box;
+}
+
+.search-input{
+    width:100%;
+    height:44px;
+    flex:0 0 44px;
+    box-sizing:border-box;
+    padding:0 10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:20px;
+    outline:none;
+    box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+
+.voice-button{
+    width:76px;
+    height:90px;
+    flex:0 0 76px;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    border:2px solid #5c249c;
+    border-radius:10px;
+    background:#5c249c;
+    color:white;
+    font-size:40px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);
+    cursor:pointer;
+}
+
+.voice-button.listening{
+    background:#d22;
+    border-color:#d22;
+}
+
+.search-input:focus {
+    border-color:#8b5cf6;
+}
+
+/* ---------- Browse Vendors ------------ */
+
+.browse-button{
+    width:100%;
+    height:40px;
+    flex:0 0 40px;
+    margin:0;
+    padding:0 12px;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border:2px solid #5c249c;
+    border-radius:6px;
+    background:#f3e8ff;
+    color:#5c249c;
+    font-size:17px;
+    font-weight:bold;
+    text-align:left;
+    box-shadow:none;
+    cursor:pointer;
+}
+
+.browse-button:active {
+    background:#e9d5ff;
+}
+
+.browse-arrow {
+    font-size:14px;
+}
+
+/* ---------- Search / My Vendors Tabs ------------ */
+
+.tabbed-list-container {
+    width:98%;
+    height:58vh;
+    display:flex;
+    flex-direction:column;
+    margin-top:10px;
+    box-sizing:border-box;
+}
+
+.tab-headers {
+    display:flex;
+    width:100%;
+}
+
+.tab-button {
+    flex:1;
+    width:50%;
+    margin:0;
+    padding:6px;
+    font-size:18px;
+    font-weight:bold;
+    border:2px solid #5c249c;
+    border-bottom:none;
+    border-radius:10px 10px 0 0;
+    box-shadow:none;
+    cursor:pointer;
+    text-align:center;
+    box-sizing:border-box;
+}
+
+.active-tab {
+    background-color:#5c249c;
+    color:white;
+}
+
+.inactive-tab {
+    background-color:#f3e8ff;
+    color:#5c249c;
+}
+
+.scroll-list {
+    flex-grow:1;
+    min-height:0;
+    border:2px solid #5c249c;
+    border-bottom-left-radius:8px;
+    border-bottom-right-radius:8px;
+    background-color:white;
+    padding:2px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    -webkit-overflow-scrolling:touch;
+}
+
+/* Keep the larger microphone comfortable on very narrow phones. */
+@media (max-width:360px){
+    .voice-button{
+        width:68px;
+        flex-basis:68px;
+        height:88px;
+        font-size:36px;
+    }
+
+    .search-row{
+        width:98%;
+        gap:6px;
+    }
+
+    .search-input{
+        font-size:18px;
+    }
+
+    .browse-button{
+        font-size:16px;
+    }
+}
+
+/* ---------- Keyboard ------------ */
+
+.keyboard-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #d1d5db;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+  padding: 5px 2px 11px 2px;
+  box-sizing: border-box;
+  z-index: 9999;
+  display: none;
+}
+
+.keyboard-stack {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Flex wrapper centers rows with fewer keys effortlessly */
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Standard character key properties */
+.key {
+  /* Explicit width definition guarantees perfectly matching dimensions across all 3 top rows */
+  width: calc(10% - 4px);
+  height: 40px;
+  margin: 0 2px;
+  background: #ffffff;
+  border: none;
+  border-radius: 3px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  touch-action: manipulation;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevents flex wrapper from squeezing layout proportions */
+}
+
+.key:active {
+  background: #adbae2;
+}
+
+.key.utility {
+  background: #a3aed0;
+  font-size: 28px;
+}
+
+/* Bottom row proportional metrics based on the strict 10% unit baseline */
+.key.toggle-btn {
+  width: calc(25% - 4px);
+}
+
+.key.spacebar {
+  width: calc(50% - 4px);
+}
+
+.key.backspace-btn {
+  width: calc(25% - 4px);
+}
+
+/* Container to center the box immediately below your input field */
+.info-box-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 3px;
+}
+
+/* The purple rounded box outline */
+.info-box {
+  width: 98%;
+  box-sizing: border-box;
+  background:#f3e8ff;
+  border-radius: 6px;
+  padding: 6px;              /* Minimal layout padding */
+  display: flex;
+  align-items: center;       /* Centers icon and content group vertically */
+  gap: 10px;                  /* Space between icon and content text */
+}
+
+/* Fixed dimensions for the star icon */
+.info-box-icon {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Content wrapper that takes up the remaining horizontal space */
+.info-box-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Row 1: Flex container to push vendor name left and booth right */
+.info-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* Line 1 Left: Vendor Name */
+.vendor-name {
+  font-size: 12pt;
+  color: #5c249c;
+  letter-spacing: -0.03em;
+  font-weight: bold;
+  line-height: 1.0;
+}
+
+/* Line 1 Right: Right-justified Booth Number */
+.booth-number {
+  font-size: 12pt;
+  color: #5c249c;
+  letter-spacing: -0.03em;
+  font-weight: bold;         /* Bolded per requirements */
+  line-height: 1.0;
+}
+
+/* Lines 2 & 3: Single text block that handles its own wrapping */
+.description-text {
+  font-size: 10.5pt;
+  letter-spacing: -0.02em;
+  font-weight: normal;
+  line-height: 1.2;
+  margin-top: 2px;           /* Minor separation from the header row */
+  word-break: break-word;
+}
+
+/* Main outer container spanning 96% width and 50% screen height */
+.tabbed-list-container {
+  width: 98%;
+  height: 50vh;              /* Exactly 50% of the screen height */
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;          /* Positioned right below the input field */
+  box-sizing: border-box;
+}
+
+/* Row wrapper for the tab buttons */
+.tab-headers {
+  display: flex;
+  width: 100%;
+}
+
+/* Base style for both tabs */
+.tab-button {
+  flex: 1;                   /* Splits the width evenly (50% each) */
+  padding: 6px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid #5c249c;
+  border-bottom: none;       /* Open bottom so it flows into the box */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* Active tab style: Purple with white text */
+.active-tab {
+  background-color: #5c249c;
+  color: white;
+}
+
+/* Inactive tab style: Lighter purple with dark purple text */
+.inactive-tab {
+  background-color: #f3e8ff;  /* Light purple background */
+  color: #5c249c;            /* Dark purple text */
+}
+
+/* Scrollable box matching the card width and rounding */
+.scroll-list {
+  flex-grow: 1;              /* Fills the remaining space of the 50vh height */
+  border: 2px solid #5c249c;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background-color: white;
+  padding: 2px;
+  overflow-y: auto;          /* Enables vertical scrolling for long lists */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;                  /* Consistent gap between stacked vendor cards */
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+}
+
+.key.number-btn{
+    width:calc(20% - 4px);
+}
+
+.key.mic-btn{
+    width:calc(20% - 4px);
+    font-size:24px;
+}
+
+.key.mic-listening{
+
+    background:#d22;
+    color:white;
+
+}
+
+/* ---------- Browse Vendors ------------ */
+
+.browse-button {
+    width: 97%;
+    max-width: 500px;
+    height: 42px;
+    margin: 0 auto 8px auto;
+    padding: 0 12px;
+    border: 2px solid #5c249c;
+    border-radius: 6px;
+    background: #f3e8ff;
+    color: #5c249c;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+.browse-button:active {
+    background: #e9d5ff;
+}
+
+.browse-arrow {
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+/* Darkened background behind popup */
+.browse-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.42);
+}
+
+/* Only display the popup when JavaScript adds .visible */
+.browse-overlay.visible {
+    display: flex;
+}
+
+/* Actual popup */
+.browse-popup {
+    width: 100%;
+    max-width: 500px;
+    max-height: 78vh;
+    padding: 0 10px 10px 10px;
+    box-sizing: border-box;
+    background: #efe4fb;
+    border: 1px solid #5c249c;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.30);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Purple popup title */
+.browse-title {
+    margin: 0 -10px 8px -10px;
+    padding: 11px 12px;
+    background: #5c249c;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Scrollable category area */
+.browse-category-list {
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 2px;
+}
+
+/* Individual category */
+.browse-category {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+
+    border-radius: 6px;
+    background: white;
+    color: #5c249c;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.browse-category:active {
+    background: #f3e8ff;
+}
+
+/* Cancel button */
+.browse-cancel {
+    width: 100%;
+    height: 44px;
+    flex: 0 0 44px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #5c249c;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.browse-cancel:active {
+    background: #7c3aed;
+}
+
+/* ---------- Vendor Detail Popup ------------ */
+
+.vendor-detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.42);
+}
+
+.vendor-detail-overlay.visible {
+    display: flex;
+}
+
+.vendor-detail-popup {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    max-height: 78vh;
+    box-sizing: border-box;
+    padding: 24px 16px 16px 16px;
+    background: #efe4fb;
+    border: 2px solid #5c249c;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.30);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.vendor-detail-close {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #5c249c;
+    font-size: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.vendor-detail-name {
+    padding-right: 36px;
+    color: #5c249c;
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1.15;
+}
+
+.vendor-detail-booth {
+    margin-top: 3px;
+    color: #5c249c;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.vendor-detail-description {
+    margin-top: 12px;
+    color: #000;
+    font-size: 17px;
+    line-height: 1.3;
+}
+
+.vendor-detail-products {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #5c249c;
+}
+
+.vendor-detail-products-title {
+    color: #5c249c;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.vendor-detail-product {
+    margin-top: 4px;
+    color: #000;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+/* =========================================================
+   PURPLE FESTIVAL MAP
+   ========================================================= */
+
+#galleryMap {
+    width: 100%;
+    height: 72vh;
+    min-height: 520px;
+    max-height: 900px;
+    margin-top: 8px;
+    overflow: hidden;
+    background: #111214;
+    border: 2px solid #5f259f;
+    border-radius: 8px;
+    touch-action: none;
+}
+
+#galleryMap .leaflet-container {
+    width: 100%;
+    height: 100%;
+    background: #111214;
+}
+
+
+/* ---------------------------------------------------------
+   Zone buttons
+   --------------------------------------------------------- */
+
+.zone-btn-wrap {
+    background: transparent;
+    border: 0;
+}
+
+.zone-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 9px 16px;
+
+    border-radius: 999px;
+
+    font-weight: 700;
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    border: 2px solid rgba(255,255,255,0.9);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.35);
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: auto;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    line-height: 1;
+}
+
+
+/* ---------------------------------------------------------
+   Vendor labels at higher zoom
+   --------------------------------------------------------- */
+
+.leaflet-tooltip.vendor-label {
+  background: #efe4fb !important;
+  color: #5c429c !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.30) !important;
+
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
+  box-sizing: border-box !important;
+
+  padding: 3px 5px !important;
+  border-radius: 4px !important;
+
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.leaflet-tooltip.vendor-label::before {
+  display: none !important;
+}
+
+
+/* ---------------------------------------------------------
+   Vendor popup
+   --------------------------------------------------------- */
+
+.leaflet-popup.vendor-popup .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  padding: 0;
+  background: #efe4fb;
+  color: #5c429c;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.40);
+
+  /* Override the global Leaflet popup max-width */
+  width: 250px !important;
+  max-width: 250px !important;
+  box-sizing: border-box;
+}
+
+.leaflet-popup.vendor-popup .leaflet-popup-content {
+  margin: 0;
+  width: 250px !important;
+  max-width: 250px !important;
+  box-sizing: border-box;
+}
+
+.leaflet-popup.vendor-popup .leaflet-popup-tip {
+  background: #efe4fb;
+}
+
+.vendor-popup-inner {
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.vendor-popup-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #5c429c;
+
+  margin: 0 0 5px;
+  padding-right: 24px;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.vendor-popup-booth {
+  display: inline-block;
+
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  padding: 3px 8px;
+  border-radius: 999px;
+
+  margin-bottom: 7px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.vendor-popup-desc {
+  font-size: 13px;
+  line-height: 1.35;
+
+  color: #5c429c;
+
+  margin: 0;
+  max-width: 100%;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.leaflet-popup.vendor-popup .leaflet-popup-close-button {
+  color: #5c249c !important;
+  font-size: 18px !important;
+  padding: 4px 6px 0 0 !important;
+}
+
+.leaflet-popup.vendor-popup .leaflet-popup-close-button:hover {
+  color: #5c429c !important;
 }

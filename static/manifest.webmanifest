@@ -1,10 +1,10 @@
 {
-  "name": "Wayne County Fair",
-  "short_name": "Fair",
+  "name": "Purple Painted Lady Festival",
+  "short_name": "Purple",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4f1e8",
-  "theme_color": "#8b5a2b",
+  "background_color": "#ffffff",
+  "theme_color": "#5c249c",
   "icons": [
     {
       "src": "/static/favicon.png",

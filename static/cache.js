@@ -1,53 +1,92 @@
 // cache.js
 
-const CACHE_DB_NAME = "fairapp";
-const CACHE_DB_VERSION = 7;
+const CACHE_DB_NAME = "purpleapp";
+const CACHE_DB_VERSION = 8;
 
 const CACHED_RESOURCES = [
-  "facilities",
-  "midway",
-  "tickets",
-  "firstaid",
-  "parade",
-  "tasting",
-  "exhibits",
-  "about",
+  "directions",
   "faqs",
-  "sponsors",
-  "food",
-  "vendor",
-  "community",
-  "animal",
+  "firstaid",
+  "facilities",
+  "about",
+  "times",
+  "vendors",
+  "categories",
+  "booths",
+  "zones",
   "events",
+  "sponsors",
   "media"
 ];
 
 class CacheManagerClass {
 
-  constructor() {
-    this.db = null;
-    this.syncTimer = null;
-    this.mediaUrls = new Map();
-  }
+    constructor() {
+      this.db = null;
+      this.dbReady = null;
+      this.syncTimer = null;
+      this.mediaUrls = new Map();
+    }
 
-    async init() {
+async init() {
 
-        console.count("CacheManager.init");
+    console.count("CacheManager.init");
 
-        this.db = await this.openDB();
+    /*
+     * Open IndexedDB once and expose the promise so that
+     * anything using CacheManager can safely wait for it.
+     */
+    if (!this.dbReady) {
+        this.dbReady = this.openDB();
+    }
 
-        if (!await this.getMetadata("install_time")) {
+    this.db = await this.dbReady;
 
+    if (!await this.getMetadata("install_time")) {
             await this.setMetadata(
                 "install_time",
                 Date.now()
             );
-
         }
+
         console.log("CacheManager initialized");
 
         this.startBackgroundSync();
+    }
 
+    async registerDeviceFirstSeen(deviceId) {
+
+        try {
+
+            const res = await fetch(
+                `/api/device_first_seen/${encodeURIComponent(deviceId)}`,
+                {
+                    method: "POST"
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error(
+                    `HTTP ${res.status}`
+                );
+            }
+
+            console.log(
+                "Device first-seen registered:",
+                deviceId
+            );
+
+            return true;
+
+        } catch (err) {
+
+            console.warn(
+                "Device first-seen registration failed:",
+                err
+            );
+
+            return false;
+        }
     }
 
     async startBackgroundSync() {
@@ -71,16 +110,59 @@ class CacheManagerClass {
                 console.log(
                     "Running startup resource sync"
                 );
+
+                const firstSeenRegistered =
+                    await this.getMetadata(
+                        "device_first_seen_registered"
+                    );
+
+                if (!firstSeenRegistered) {
+
+                    let deviceId =
+                        localStorage.getItem("device_id");
+
+                    if (!deviceId) {
+
+                        deviceId =
+                            crypto.randomUUID();
+
+                        localStorage.setItem(
+                            "device_id",
+                            deviceId
+                        );
+                    }
+
+                    const registered =
+                        await this.registerDeviceFirstSeen(
+                            deviceId
+                        );
+
+                    if (registered) {
+
+                        await this.setMetadata(
+                            "device_first_seen_registered",
+                            true
+                        );
+                    }
+                }
+
                 await this.preloadMediaZip();
 
-                console.log("Checking for media updates...");
+                console.log(
+                    "Checking for media updates..."
+                );
 
                 await this.syncMediaManifest();
 
-                console.log("Saving current media resource version...");
+                console.log(
+                    "Saving current media resource version..."
+                );
 
-                const res = await fetch("/api/resource");
-                const resources = await res.json();
+                const res =
+                    await fetch("/api/resource");
+
+                const resources =
+                    await res.json();
 
                 await this.setMetadata(
                     "last_resource_check",
@@ -88,16 +170,16 @@ class CacheManagerClass {
                 );
 
                 const mediaInfo =
-                    resources.find(r => r.resource === "media");
+                    resources.find(
+                        r => r.resource === "media"
+                    );
 
                 if (mediaInfo) {
 
                     await this.putResource({
-
                         resource: "media",
                         version: mediaInfo.version,
                         updated: mediaInfo.updated
-
                     });
 
                     console.log(
@@ -105,7 +187,9 @@ class CacheManagerClass {
                     );
                 }
 
-                console.log("Downloading initial app resources...");
+                console.log(
+                    "Downloading initial app resources..."
+                );
 
                 await this.syncResources();
 
@@ -114,14 +198,15 @@ class CacheManagerClass {
                     Date.now()
                 );
 
-                console.log("Initial resource download complete.");
+                console.log(
+                    "Initial resource download complete."
+                );
 
             } else {
 
                 console.log(
                     "Skipping startup resource sync"
                 );
-
             }
 
             // Download the latest vote results if we are online.
@@ -144,7 +229,6 @@ class CacheManagerClass {
                 "Startup sync failed",
                 err
             );
-
         }
 
         this.syncTimer = setInterval(async () => {
@@ -166,7 +250,6 @@ class CacheManagerClass {
             this.syncAlerts();
 
         }, 60000);
-
     }
 
   openDB() {
@@ -259,7 +342,24 @@ class CacheManagerClass {
     });
   }
 
+    async ensureReady() {
+
+        if (this.db) {
+            return;
+        }
+
+        if (this.dbReady) {
+            this.db = await this.dbReady;
+            return;
+        }
+
+        this.dbReady = this.openDB();
+        this.db = await this.dbReady;
+    }
+
   async getResource(resource) {
+
+    await this.ensureReady();
 
     return new Promise((resolve, reject) => {
 
@@ -295,6 +395,7 @@ async getResourceData(resource) {
 
   async putResource(record) {
 
+    await this.ensureReady();
     return new Promise((resolve, reject) => {
 
       const tx = this.db.transaction(
@@ -314,7 +415,7 @@ async getResourceData(resource) {
   }
 
     async getMedia(name) {
-
+      await this.ensureReady();
       return new Promise((resolve, reject) => {
 
         const tx = this.db.transaction(
@@ -359,7 +460,7 @@ async getResourceData(resource) {
 
 
     async putMedia(record) {
-
+      await this.ensureReady();
       if (this.mediaUrls.has(record.name)) {
 
         URL.revokeObjectURL(
@@ -474,7 +575,7 @@ async renderHtml(target, html) {
 }
 
     async getMediaStats() {
-
+      await this.ensureReady();
       return new Promise((resolve, reject) => {
 
         const tx =
@@ -522,7 +623,7 @@ async renderHtml(target, html) {
     }
 
     async getMetadata(key) {
-
+      await this.ensureReady();
       return new Promise((resolve, reject) => {
 
         const tx = this.db.transaction(
@@ -546,7 +647,7 @@ async renderHtml(target, html) {
     }
 
     async setMetadata(key, value) {
-
+      await this.ensureReady();
       return new Promise((resolve, reject) => {
 
         const tx = this.db.transaction(
@@ -623,13 +724,13 @@ if (
   await this.syncSponsors(resource);
 
 } else if (
-  resource.resource === "food" ||
-  resource.resource === "vendor" ||
-  resource.resource === "community" ||
-  resource.resource === "animal"
+  resource.resource === "vendors" ||
+  resource.resource === "booths" ||
+  resource.resource === "zones" ||
+  resource.resource === "categories"
 ) {
 
-  await this.syncTenant(resource);
+  await this.syncData(resource);
 
 } else if (
   resource.resource === "events"
@@ -754,6 +855,41 @@ async syncSponsors(serverInfo) {
       err
     );
   }
+}
+
+async syncData(serverInfo) {
+
+  try {
+
+    const local = await this.getResource(serverInfo.resource);
+    const needsUpdate =
+      !local || local.version !== serverInfo.version;
+    if (!needsUpdate) {
+
+      return;
+
+    }
+    console.log(`Updating ${serverInfo.resource} cache`);
+    const res = await fetch(
+      `/api/${serverInfo.resource}?v=${serverInfo.version}`
+    );
+    const data = await res.json();
+    await this.putResource({
+
+      resource: serverInfo.resource,
+      version: serverInfo.version,
+      updated: serverInfo.updated,
+      data
+
+    });
+    console.log(`${serverInfo.resource} cache updated`);
+
+  } catch (err) {
+
+    console.warn(`${serverInfo.resource} update failed`, err);
+
+  }
+
 }
 
 async syncTenant(serverInfo) {
@@ -1021,6 +1157,7 @@ async syncMedia(serverInfo) {
 
 async queueAnalytics(event) {
 
+  await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1042,7 +1179,7 @@ async queueAnalytics(event) {
 }
 
 async getAnalyticsBatch() {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1066,7 +1203,7 @@ async getAnalyticsBatch() {
 }
 
 async clearAnalytics(ids) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1142,7 +1279,7 @@ async syncAnalytics() {
 }
 
 async queueSurvey(survey) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1164,7 +1301,7 @@ async queueSurvey(survey) {
 }
 
 async getSurveyBatch() {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1187,7 +1324,7 @@ async getSurveyBatch() {
 }
 
 async clearSurveys(ids) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1267,7 +1404,7 @@ async syncSurveys() {
 }
 
 async queueVote(vote) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1289,7 +1426,7 @@ async queueVote(vote) {
 }
 
 async getVoteBatch() {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1312,7 +1449,7 @@ async getVoteBatch() {
 }
 
 async clearVotes(ids) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1412,7 +1549,7 @@ async refreshVoteResults() {
 }
 
 async queueAlert(alert) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1434,7 +1571,7 @@ async queueAlert(alert) {
 }
 
 async getAlertBatch() {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(
@@ -1457,7 +1594,7 @@ async getAlertBatch() {
 }
 
 async clearAlerts(ids) {
-
+      await this.ensureReady();
   return new Promise((resolve, reject) => {
 
     const tx = this.db.transaction(

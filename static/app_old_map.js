@@ -2218,17 +2218,7 @@ async function renderSurveyThankYou(){
 // ---------------- MAP ----------------
 async function showMap(options = {}){
 
-  await window.cacheReady;
-
-  const content = document.getElementById("content");
-
-  /*
-   * ------------------------------------------------------------
-   * Preserve the existing Purple ticket header EXACTLY.
-   * ------------------------------------------------------------
-   */
-
-  content.innerHTML = `
+  document.getElementById('content').innerHTML = `
 
 <div class="ticket-header">
 
@@ -2250,9 +2240,9 @@ async function showMap(options = {}){
       </div>
 
       <div class="ticket-header-subtitle">
-        <span style="font-size: 1em;">
-          Pinch/spread to explore. <br>Red dot is your location.
-        </span>
+      <span style="font-size: 1em;">
+      Pinch/spread to explore. <br>Red dot is your location.
+      </span>
       </div>
 
     </div>
@@ -2269,1974 +2259,589 @@ async function showMap(options = {}){
   Location Dot Will Appear When at Festival
 </div>
 
+<div class="gallery-button-row">
+
+  <button
+    id="btn-fair"
+    class="gallery-btn active">
+    Festival Map
+  </button>
+
+  <button
+    id="btn-floral"
+    class="gallery-btn">
+    Floral Hall
+  </button>
+
+  <button
+    id="btn-commercial1"
+    class="gallery-btn">
+    Commercial Bldg. 1
+  </button>
+
+  <button
+    id="btn-commercial2"
+    class="gallery-btn">
+    Commercial Bldg. 2
+  </button>
+
+</div>
+
 <div id="galleryMap"></div>
 
   `;
 
+      if (options.instantScroll){
+        const content = document.getElementById("content");
 
-  /*
-   * ------------------------------------------------------------
-   * Preserve the special Explore -> Map behavior.
-   * ------------------------------------------------------------
-   */
+        if (content){
+          const y =
+            content.getBoundingClientRect().top +
+            window.pageYOffset -
+            12;
 
-  if (options.instantScroll){
+          window.scrollTo({
+            top: y,
+            behavior: "auto"
+          });
+        }
+      } else {
+        scrollToContent();
+      }
 
-    const contentEl =
-      document.getElementById("content");
+    const map = L.map('galleryMap', {
+      crs: L.CRS.Simple,
+      minZoom: -2,
+      maxZoom: 3,
+      zoomSnap: 0.25,
+      attributionControl: false,
+      maxBoundsViscosity: 1.0
+    });
 
-    if (contentEl){
+    const gpsMarker = L.circleMarker([0,0], {
 
-      const y =
-        contentEl.getBoundingClientRect().top +
-        window.pageYOffset -
-        12;
+      radius: 12,
 
-      window.scrollTo({
-        top: y,
-        behavior: "auto"
-      });
+      color: '#ffffff',
+      weight: 2,
 
-    }
-
-  } else {
-
-    scrollToContent();
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Load the Purple festival data from IndexedDB.
-   * ------------------------------------------------------------
-   */
-
-  const vendorRecord =
-    await CacheManager.getResource("vendors");
-
-  const boothRecord =
-    await CacheManager.getResource("booths");
-
-  const zoneRecord =
-    await CacheManager.getResource("zones");
-
-
-const vendors =
-  vendorRecord?.data || [];
-
-const booths =
-  boothRecord?.data || [];
-
-const zones =
-  zoneRecord?.data || [];
-
-/*
- * The zones resource comes from the server as JSON.
- * vertices may therefore still be a JSON string when it
- * reaches IndexedDB. Convert it back into the array of
- * [lat, lon] pairs expected by Leaflet.
- */
-zones.forEach(zone => {
-
-  if (typeof zone.vertices === "string") {
-
-    try {
-
-      zone.vertices =
-        JSON.parse(zone.vertices);
-
-    } catch (err) {
-
-      console.error(
-        "Unable to parse zone vertices:",
-        zone.zone_id,
-        zone.vertices,
-        err
-      );
-
-      zone.vertices = [];
-
-    }
-
-  }
-
-});
-
-  /*
-   * ------------------------------------------------------------
-   * Map image.
-   *
-   * Use the media cache first so the map continues to work
-   * offline just like the rest of the Purple app.
-   * ------------------------------------------------------------
-   */
-
-  const mapImage =
-    await CacheManager.getMediaUrl(
-      "/static/maps/festival_map.jpg"
-    ) || "/static/maps/festival_map.jpg";
-
-
-  /*
-   * ------------------------------------------------------------
-   * Determine the actual image dimensions.
-   *
-   * This avoids hard-coding the dimensions of festival_map.png.
-   * ------------------------------------------------------------
-   */
-
-  const imageDimensions =
-    await new Promise((resolve, reject) => {
-
-      const img = new Image();
-
-      img.onload = () => {
-
-        resolve({
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        });
-
-      };
-
-      img.onerror = () => {
-        reject(
-          new Error(
-            "Unable to load festival map image."
-          )
-        );
-      };
-
-      img.src = mapImage;
+      fillColor: '#ff0000',
+      fillOpacity: 1
 
     });
 
+    let gpsVisible = false;
 
-  const imageWidth =
-    imageDimensions.width;
+    const imageWidth = 1536;
+    const imageHeight = 2048;
 
-  const imageHeight =
-    imageDimensions.height;
+    const bounds = [
+      [0, 0],
+      [imageHeight, imageWidth]
+    ];
 
+const IMAGES = {
 
-  /*
-   * ------------------------------------------------------------
-   * Leaflet map.
-   *
-   * Keep the existing CRS.Simple approach because the map
-   * itself is an image and the GPS coordinates are converted
-   * into image coordinates below.
-   * ------------------------------------------------------------
-   */
+  fair:
+    await CacheManager.getMediaUrl(
+      "/static/maps/fair_map4.webp"
+    ) || "/static/maps/fair_map4.webp",
 
-const MAP_BOUNDS = {
-  north: 43.041382,
-  south: 43.039711,
-  west: -77.259224,
-  east: -77.257058
+  floral:
+    await CacheManager.getMediaUrl(
+      "/static/maps/floral_plan.webp"
+    ) || "/static/maps/floral_plan.webp",
+
+  commercial1:
+    await CacheManager.getMediaUrl(
+      "/static/maps/commercial_1_plan.webp"
+    ) || "/static/maps/commercial_1_plan.webp",
+
+  commercial2:
+    await CacheManager.getMediaUrl(
+      "/static/maps/commercial_2_plan.webp"
+    ) || "/static/maps/commercial_2_plan.webp"
 };
 
-const imageBounds =
-  L.latLngBounds([
-    [MAP_BOUNDS.south, MAP_BOUNDS.west],
-    [MAP_BOUNDS.north, MAP_BOUNDS.east]
-  ]);
+let currentView = 'fair';
 
-const map =
-  L.map("galleryMap", {
-    crs: L.CRS.EPSG3857,
-    minZoom: 0,
-    maxZoom: 23,
-    zoomSnap: 0.25,
-    zoomDelta: 0.75,
-    attributionControl: false,
-    maxBoundsViscosity: 1.0,
-    tap: true
-  });
+const savedViews = {};
 
-  /*
-   * ------------------------------------------------------------
-   * GPS marker.
-   *
-   * This is the same marker used by the existing Purple map.
-   * ------------------------------------------------------------
-   */
+let currentOverlay = null;
 
-  const gpsMarker =
-    L.circleMarker(
-      [0, 0],
-      {
-        radius: 12,
+    map.setMaxBounds(bounds);
 
-        color: "#ffffff",
-
-        weight: 2,
-
-        fillColor: "#ff0000",
-
-        fillOpacity: 1
-      }
-    );
-
-
-  let gpsVisible = false;
-
-
-  /*
-   * ------------------------------------------------------------
-   * Image coordinate bounds.
-   * ------------------------------------------------------------
-   */
-
-const bounds = imageBounds;
-
-
-  /*
-   * ------------------------------------------------------------
-   * Festival map image.
-   * ------------------------------------------------------------
-   */
-
+currentOverlay =
   L.imageOverlay(
-    mapImage,
-    bounds,
-    {
-      interactive: false
-    }
+    IMAGES.fair,
+    bounds
   ).addTo(map);
 
-map.setMaxBounds(
-  imageBounds
-);
+    map.fitBounds(bounds);
 
-let mapFitZoom = 0;
+function setActiveButton(id){
 
-function computeWholeMapZoom(){
-
-  const rect =
-    document
-      .getElementById(
-        "galleryMap"
-      )
-      .getBoundingClientRect();
-
-  const refZoom = 0;
-
-  const nw =
-    map.project(
-      imageBounds.getNorthWest(),
-      refZoom
+  document
+    .querySelectorAll('.gallery-btn')
+    .forEach(btn =>
+      btn.classList.remove('active')
     );
 
-  const se =
-    map.project(
-      imageBounds.getSouthEast(),
-      refZoom
-    );
-
-  const imageWidthPx =
-    Math.abs(
-      se.x - nw.x
-    );
-
-  const scaleX =
-    rect.width /
-    imageWidthPx;
-
-  return map.getScaleZoom(
-    scaleX,
-    refZoom
-  );
+  document
+    .getElementById(id)
+    .classList.add('active');
 }
 
-function fitWholeMap(){
+function switchImage(view){
 
-  mapFitZoom =
-    computeWholeMapZoom();
+  savedViews[currentView] = {
 
-  map.setMinZoom(
-    mapFitZoom
-  );
+    center: map.getCenter(),
 
-  map._resetView(
-    imageBounds.getCenter(),
-    mapFitZoom
-  );
+    zoom: map.getZoom()
+  };
+
+currentView = view;
+
+map.closePopup();
+
+if (view !== 'fair' && gpsVisible){
+
+  map.removeLayer(gpsMarker);
+
+  gpsVisible = false;
 }
 
-  /*
-   * ------------------------------------------------------------
-   * GPS boundary check.
-   * ------------------------------------------------------------
-   */
+if (currentOverlay){
+
+    map.removeLayer(currentOverlay);
+  }
+
+  currentOverlay =
+    L.imageOverlay(
+      IMAGES[view],
+      bounds
+    ).addTo(map);
+
+  map.setMaxBounds(bounds);
+
+  if (savedViews[view]){
+
+    map.setView(
+      savedViews[view].center,
+      savedViews[view].zoom
+    );
+
+  } else {
+
+    map.fitBounds(bounds);
+  }
+
+}
+
+document
+  .getElementById('btn-fair')
+  .addEventListener('click', () => {
+
+    setActiveButton(
+      'btn-fair'
+    );
+
+    switchImage('fair');
+
+});
+
+document
+  .getElementById('btn-floral')
+  .addEventListener('click', () => {
+
+    setActiveButton(
+      'btn-floral'
+    );
+
+    switchImage('floral');
+
+});
+
+document
+  .getElementById('btn-commercial1')
+  .addEventListener('click', () => {
+
+    setActiveButton(
+      'btn-commercial1'
+    );
+
+    switchImage(
+      'commercial1'
+    );
+
+});
+
+document
+  .getElementById('btn-commercial2')
+  .addEventListener('click', () => {
+
+    setActiveButton(
+      'btn-commercial2'
+    );
+
+    switchImage(
+      'commercial2'
+    );
+
+});
+
+  const MAP_BOUNDS = {
+    north: 43.061071,  // 43.061104
+    south: 43.056360,  // 43.056393
+    west: -77.240839,
+    east: -77.236086
+  };
+
+    function percentToMapPoint(left, top){
+
+      return [
+        imageHeight - (imageHeight * (top / 100)),
+        imageWidth * (left / 100)
+      ];
+    }
+
+function latLonToImagePoint(lat, lon){
+
+  const xPercent =
+    (lon - MAP_BOUNDS.west) /
+    (MAP_BOUNDS.east - MAP_BOUNDS.west);
+
+  const yPercent =
+    (MAP_BOUNDS.north - lat) /
+    (MAP_BOUNDS.north - MAP_BOUNDS.south);
+
+  return [
+    imageHeight * (1 - yPercent),
+    imageWidth * xPercent
+  ];
+}
+
 
   const LAT_TOL = 0.0005;
-
   const LON_TOL = 0.0005;
 
-
-  function isInside(lat, lon){
-
+  function isInside(lat, lon) {
     return (
-
-      lat <=
-        MAP_BOUNDS.north + LAT_TOL
-
-      &&
-
-      lat >=
-        MAP_BOUNDS.south - LAT_TOL
-
-      &&
-
-      lon >=
-        MAP_BOUNDS.west - LON_TOL
-
-      &&
-
-      lon <=
-        MAP_BOUNDS.east + LON_TOL
-
+      lat <= MAP_BOUNDS.north + LAT_TOL &&
+      lat >= MAP_BOUNDS.south - LAT_TOL &&
+      lon >= MAP_BOUNDS.west - LON_TOL &&
+      lon <= MAP_BOUNDS.east + LON_TOL
     );
+  }
+
+// ---------------- EXPONENTIAL SMOOTHING ----------------
+
+let filteredLat = null;
+let filteredLon = null;
+
+// Higher alpha = more responsive
+// Lower alpha = smoother
+const GPS_ALPHA = 0.45;
+
+function smoothPosition(lat, lon) {
+
+  if (filteredLat === null) {
+
+    filteredLat = lat;
+    filteredLon = lon;
+
+  } else {
+
+    filteredLat =
+      (GPS_ALPHA * lat) +
+      ((1 - GPS_ALPHA) * filteredLat);
+
+    filteredLon =
+      (GPS_ALPHA * lon) +
+      ((1 - GPS_ALPHA) * filteredLon);
 
   }
 
+  return {
+    lat: filteredLat,
+    lon: filteredLon
+  };
+}
 
-  /*
-   * ------------------------------------------------------------
-   * Existing GPS smoothing.
-   * ------------------------------------------------------------
-   */
+  // ---------------- MOVEMENT FILTER ----------------
+  let lastLat = null;
+  let lastLon = null;
 
-  let filteredLat = null;
+  function hasMovedEnough(lat, lon) {
+    if (!lastLat) return true;
 
-  let filteredLon = null;
+    const dist = Math.sqrt(
+      Math.pow(lat - lastLat, 2) +
+      Math.pow(lon - lastLon, 2)
+    );
 
+    return dist > 0.00002;
+  }
 
-  const GPS_ALPHA = 0.45;
+  // ---------------- POI ZONES ----------------
+  const POIS = [
+    { id: "Entertainment Alley",
+        left: 15.77, top: 14.43, width: 15.62, height: 9.71,
+        text: "Beer tent, main stage, bands, dancing and seating area" },
+    { id: "Grandstand",
+        left: 20.66, top: 45.44, width: 17.15, height: 19.26,
+        text: "Bleacher seating for demolition derby and track events" },
+    { id: "Midway",
+        left: 14.96, top: 25.11, width: 17.3, height: 19.53,
+        text: "Rides, games and more food" },
+    { id: "Food Court",
+        left: 38.32, top: 22.10, width: 17.01, height: 5.53,
+        text: "Snack, drinks and meals with ample seating" },
+    { id: "Main Gate",
+        left: 49.78, top: 3.38, width: 7.3, height: 8.85,
+        text: "Gate, flag pole, seating and welcome area" },
+{
+    id: "Commercial Bldg 1",
+    left: 38.10,
+    top: 14.43,
+    width: 5.11,
+    height: 7.14,
+    text: "Vendor and community booths and displays"
+},
+{
+    id: "Commercial Bldg 2",
+    left: 31.75,
+    top: 14.22,
+    width: 5.99,
+    height: 9.44,
+    text: "Vendor and community booths and displays"
+},
+    { id: "4-H Building",
+        left: 57.96, top: 3.33, width: 7.52, height: 9.17,
+        text: "4-H exhibits and demonstrations" },
+    { id: "History Building",
+        left: 56.86, top: 23.23, width: 9.85, height: 5.53,
+        text: "Historical museum" },
+{
+    id: "Floral Hall",
+    left: 50.44,
+    top: 12.77,
+    width: 7.37,
+    height: 8.91,
+    text: "Community booths, judged exhibits and floral displays"
+},
+    { id: "Livestock Tent",
+        left: 61.97, top: 14.27, width: 8.76, height: 8.53,
+        text: "Animal exhibits and demonstrations" },
+    { id: "Cattle Barn",
+        left: 71.02, top: 14.16, width: 9.78, height: 13.89,
+        text: "Animal exhibits and demonstrations" },
+    { id: "Horse Barn",
+        left: 72.12, top: 29.67, width: 13.07, height: 26.23,
+        text: "Horse stables and tack displays" },
+    { id: "Weekly Events",
+        left: 41.39, top: 3.43, width: 7.52, height: 9.82,
+        text: "Weekly show tent and greased pole contest" },
+    { id: "Infield Area",
+        left: 50.15, top: 29.45, width: 21.17, height: 16.85,
+        text: "Blue Ribbon Ag Center, antiques, lego, duck races, livestock ring & sensory friendly tent" },
+    { id: "Horse Ring",
+        left: 50.15, top: 46.73, width: 21.17, height: 11.59,
+        text: "Horse riding and judging ring" }
+  ];
 
+    POIS.forEach(poi => {
 
-  function smoothPosition(lat, lon){
+      const point =
+        percentToMapPoint(
+          poi.left + (poi.width / 2),
+          poi.top + (poi.height / 2)
+        );
 
-    if (filteredLat === null){
+    const rect = L.rectangle(
 
-      filteredLat = lat;
+      [
 
-      filteredLon = lon;
+        [
+          imageHeight - (imageHeight * ((poi.top + poi.height) / 100)),
+          imageWidth * (poi.left / 100)
+        ],
+
+        [
+          imageHeight - (imageHeight * (poi.top / 100)),
+          imageWidth * ((poi.left + poi.width) / 100)
+        ]
+
+      ],
+
+      {
+        stroke: false,
+        fillOpacity: 0
+      }
+
+    ).addTo(map);
+
+rect.on('click', () => {
+
+  L.popup()
+    .setLatLng(point)
+    .setContent(`
+      <b>${poi.id}</b><br>
+      ${poi.text}
+    `)
+    .openOn(map);
+
+});
+    });
+
+const GPS_HIDE_ACCURACY_FT = 200;
+const GPS_LOW_ACCURACY_FT = 150;
+
+function getGpsRadius(accuracyFt){
+
+  if (accuracyFt < 20) return 12;
+  if (accuracyFt < 50) return 18;
+  if (accuracyFt < 100) return 24;
+  if (accuracyFt < 150) return 30;
+
+  return 36;
+}
+
+if ('geolocation' in navigator){
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+
+    (pos) => {
+
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    const accuracyMeters =
+      pos.coords.accuracy || 9999;
+
+    const accuracyFt =
+      Math.round(accuracyMeters * 3.28084);
+
+    const gpsStatus =
+      document.getElementById('gpsStatus');
+
+    if (!gpsStatus) {
+      return;
+    }
+
+    if (accuracyFt > GPS_HIDE_ACCURACY_FT) {
+
+      gpsStatus.innerHTML =
+        "GPS Location Not Currently Available";
+
+      if (gpsVisible) {
+
+        map.removeLayer(gpsMarker);
+
+        gpsVisible = false;
+      }
+
+      return;
+    }
+
+    if (accuracyFt >= GPS_LOW_ACCURACY_FT) {
+
+      gpsStatus.textContent =
+        `GPS Accuracy: ±${accuracyFt} ft (Low Accuracy)`;
 
     } else {
 
-      filteredLat =
-        (GPS_ALPHA * lat) +
-        ((1 - GPS_ALPHA) * filteredLat);
-
-
-      filteredLon =
-        (GPS_ALPHA * lon) +
-        ((1 - GPS_ALPHA) * filteredLon);
-
+      gpsStatus.textContent =
+        `GPS Accuracy: ±${accuracyFt} ft`;
     }
 
+    if (!isInside(lat, lon)) {
 
-    return {
+      gpsStatus.innerHTML =
+        "Location Dot Will Appear When at Festival";
 
-      lat: filteredLat,
+      if (gpsVisible) {
 
-      lon: filteredLon
+        map.removeLayer(gpsMarker);
 
-    };
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Existing GPS movement filter.
-   * ------------------------------------------------------------
-   */
-
-  let lastLat = null;
-
-  let lastLon = null;
-
-
-  function hasMovedEnough(lat, lon){
-
-    if (!lastLat) {
-      return true;
-    }
-
-
-    const dist =
-      Math.sqrt(
-
-        Math.pow(
-          lat - lastLat,
-          2
-        )
-
-        +
-
-        Math.pow(
-          lon - lastLon,
-          2
-        )
-
-      );
-
-
-    return dist > 0.00002;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * GPS display logic.
-   *
-   * This is deliberately kept equivalent to the existing logic.
-   * ------------------------------------------------------------
-   */
-
-  const GPS_HIDE_ACCURACY_FT = 200;
-
-  const GPS_LOW_ACCURACY_FT = 150;
-
-
-  function getGpsRadius(accuracyFt){
-
-    if (accuracyFt < 20) return 12;
-
-    if (accuracyFt < 50) return 18;
-
-    if (accuracyFt < 100) return 24;
-
-    if (accuracyFt < 150) return 30;
-
-    return 36;
-
-  }
-
-
-  /*
-   * There is now only one map view.
-   *
-   * Keep this as "fair" so the existing GPS logic remains
-   * unchanged rather than introducing a new GPS path.
-   */
-
-  let currentView = "fair";
-
-
-  if ("geolocation" in navigator){
-
-    gpsWatchId =
-      navigator.geolocation.watchPosition(
-
-        (pos) => {
-
-          const lat =
-            pos.coords.latitude;
-
-          const lon =
-            pos.coords.longitude;
-
-
-          const accuracyMeters =
-            pos.coords.accuracy || 9999;
-
-
-          const accuracyFt =
-            Math.round(
-              accuracyMeters * 3.28084
-            );
-
-
-          const gpsStatus =
-            document.getElementById(
-              "gpsStatus"
-            );
-
-
-          if (!gpsStatus){
-            return;
-          }
-
-
-          if (
-            accuracyFt >
-            GPS_HIDE_ACCURACY_FT
-          ){
-
-            gpsStatus.innerHTML =
-              "GPS Location Not Currently Available";
-
-
-            if (gpsVisible){
-
-              map.removeLayer(
-                gpsMarker
-              );
-
-              gpsVisible = false;
-
-            }
-
-            return;
-
-          }
-
-
-          if (
-            accuracyFt >=
-            GPS_LOW_ACCURACY_FT
-          ){
-
-            gpsStatus.textContent =
-              `GPS Accuracy: ±${accuracyFt} ft (Low Accuracy)`;
-
-          } else {
-
-            gpsStatus.textContent =
-              `GPS Accuracy: ±${accuracyFt} ft`;
-
-          }
-
-
-          if (!isInside(lat, lon)){
-
-            gpsStatus.innerHTML =
-              "Location Dot Will Appear When at Festival";
-
-
-            if (gpsVisible){
-
-              map.removeLayer(
-                gpsMarker
-              );
-
-              gpsVisible = false;
-
-            }
-
-            return;
-
-          }
-
-
-          if (
-            !hasMovedEnough(
-              lat,
-              lon
-            )
-          ){
-
-            return;
-
-          }
-
-
-          lastLat = lat;
-
-          lastLon = lon;
-
-
-          const smooth =
-            smoothPosition(
-              lat,
-              lon
-            );
-
-        const point =
-          L.latLng(
-            smooth.lat,
-            smooth.lon
-          );
-
-
-          gpsMarker.setRadius(
-            getGpsRadius(
-              accuracyFt
-            )
-          );
-
-
-          gpsMarker.setLatLng(
-            point
-          );
-
-
-          if (
-            currentView !== "fair"
-          ){
-
-            if (gpsVisible){
-
-              map.removeLayer(
-                gpsMarker
-              );
-
-              gpsVisible = false;
-
-            }
-
-            return;
-
-          }
-
-
-          if (!gpsVisible){
-
-            gpsMarker.addTo(map);
-
-            gpsVisible = true;
-
-          }
-
-        },
-
-
-        (err) => {
-
-          console.log(
-            "GPS error:",
-            err
-          );
-
-
-          const gpsStatus =
-            document.getElementById(
-              "gpsStatus"
-            );
-
-
-          if (gpsStatus){
-
-            gpsStatus.innerHTML =
-              "Location Dot Will Appear When at Festival";
-
-          }
-
-
-          if (gpsVisible){
-
-            map.removeLayer(
-              gpsMarker
-            );
-
-            gpsVisible = false;
-
-          }
-
-        },
-
-
-        {
-
-          enableHighAccuracy: true,
-
-          maximumAge: 1000,
-
-          timeout: 10000
-
-        }
-
-      );
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Map behavior from festival_map.html prototype.
-   * ------------------------------------------------------------
-   */
-
-
-  function textColorFor(hexColor){
-
-    let c =
-      String(hexColor || "")
-        .replace("#", "");
-
-
-    if (c.length === 3){
-
-      c =
-        c
-          .split("")
-          .map(
-            ch => ch + ch
-          )
-          .join("");
-
-    }
-
-
-    const r =
-      parseInt(
-        c.substr(0, 2),
-        16
-      ) / 255;
-
-
-    const g =
-      parseInt(
-        c.substr(2, 2),
-        16
-      ) / 255;
-
-
-    const b =
-      parseInt(
-        c.substr(4, 2),
-        16
-      ) / 255;
-
-
-    const lum =
-      0.2126 * r +
-      0.7152 * g +
-      0.0722 * b;
-
-
-    return lum > 0.6
-      ? "#15161a"
-      : "#ffffff";
-
-  }
-
-
-  function polygonCentroid(vertices){
-
-    const pts =
-      vertices.slice();
-
-
-    if (pts.length > 1){
-
-      const first =
-        pts[0];
-
-      const last =
-        pts[pts.length - 1];
-
-
-      if (
-        first[0] === last[0] &&
-        first[1] === last[1]
-      ){
-
-        pts.pop();
-
+        gpsVisible = false;
       }
-
-    }
-
-
-    let latSum = 0;
-
-    let lngSum = 0;
-
-
-    for (
-      let i = 0;
-      i < pts.length;
-      i++
-    ){
-
-      latSum += pts[i][0];
-
-      lngSum += pts[i][1];
-
-    }
-
-
-    return [
-
-      latSum / pts.length,
-
-      lngSum / pts.length
-
-    ];
-
-  }
-
-
-  /*
-   * Booth marker sizing from prototype.
-   */
-
-  const BOOTH_FEET = 10;
-
-  const BOOTH_METERS =
-    BOOTH_FEET * 0.3048;
-
-  const DOT_DIAMETER_SCALE = 0.9;
-
-  const MIN_DOT_RADIUS = 4;
-
-  const MAX_DOT_RADIUS = 60;
-
-  const HIT_PADDING_PX = 10;
-
-  const MIN_HIT_RADIUS = 16;
-
-  const LABEL_MIN_ZOOM_OFFSET = 2.5;
-
-
-  function metersPerPixel(lat, zoom){
-
-    return (
-      156543.03392 *
-      Math.cos(
-        lat * Math.PI / 180
-      ) /
-      Math.pow(
-        2,
-        zoom
-      )
-    );
-
-  }
-
-
-  function dotRadiusFor(lat, zoom){
-
-    const mpp =
-      metersPerPixel(
-        lat,
-        zoom
-      );
-
-
-    const r =
-      (
-        BOOTH_METERS *
-        DOT_DIAMETER_SCALE /
-        2
-      ) / mpp;
-
-
-    return Math.max(
-      MIN_DOT_RADIUS,
-      Math.min(
-        r,
-        MAX_DOT_RADIUS
-      )
-    );
-
-  }
-
-
-  function cleanBoothNumber(value){
-
-    return (
-      value || ""
-    )
-      .toString()
-      .trim()
-      .replace(
-        /,\s*$/,
-        ""
-      );
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Favorites.
-   *
-   * Use the SAME IndexedDB favorites used by Explore.
-   * ------------------------------------------------------------
-   */
-
-  let favoriteVendorIds =
-    new Set();
-
-
-  /*
-   * Count favorites by vendor zone.
-   *
-   * This deliberately counts vendors rather than booths,
-   * matching the prototype behavior.
-   */
-
-function computeFavoriteCountsByZone(){
-
-  const counts = {};
-
-  const favoriteIds =
-    new Set(
-      Array.from(
-        favoriteVendorIds
-      ).map(
-        id => String(id)
-      )
-    );
-
-  Object.keys(
-    boothsByZone
-  ).forEach(
-    zoneId => {
-
-      const favoriteVendors =
-        new Set();
-
-      boothsByZone[
-        zoneId
-      ].forEach(
-        booth => {
-
-          if (
-            favoriteIds.has(
-              String(
-                booth.vendor_id
-              )
-            )
-          ){
-            favoriteVendors.add(
-              String(
-                booth.vendor_id
-              )
-            );
-          }
-
-        }
-      );
-
-      if (
-        favoriteVendors.size > 0
-      ){
-        counts[zoneId] =
-          favoriteVendors.size;
-      }
-
-    }
-  );
-
-  return counts;
-}
-
-  function escapeHtml(value){
-
-    return String(
-      value == null
-        ? ""
-        : value
-    )
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  function zoneButtonHtml(
-    zone,
-    favoriteCount
-  ){
-
-    let label =
-      escapeHtml(
-        zone.zone_name
-      );
-
-
-    if (favoriteCount > 0){
-
-      label +=
-        " (" +
-        favoriteCount +
-        ")";
-
-    }
-
-
-    return `
-      <div
-        class="zone-btn"
-        style="
-          background:${zone.zone_color};
-          color:${textColorFor(zone.zone_color)};
-        "
-      >
-        ${label}
-      </div>
-    `;
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Zone state.
-   * ------------------------------------------------------------
-   */
-
-  const zoneState = {};
-
-
-  /*
-   * ------------------------------------------------------------
-   * Build the vendor lookup.
-   * ------------------------------------------------------------
-   */
-
-  const vendorById = {};
-
-
-  vendors.forEach(
-    vendor => {
-
-      vendorById[
-        vendor.vendor_id
-      ] = vendor;
-
-    }
-  );
-
-
-  /*
-   * Booths grouped by zone.
-   */
-
-  const boothsByZone = {};
-
-
-  booths.forEach(
-    booth => {
-
-      if (
-        !boothsByZone[
-          booth.zone_id
-        ]
-      ){
-
-        boothsByZone[
-          booth.zone_id
-        ] = [];
-
-      }
-
-
-      boothsByZone[
-        booth.zone_id
-      ].push(
-        booth
-      );
-
-    }
-  );
-
-
-  /*
-   * ------------------------------------------------------------
-   * Build zone polygons and labels.
-   * ------------------------------------------------------------
-   */
-
-  function buildZones(
-    favoriteCountsByZone
-  ){
-
-    zones.forEach(
-      zone => {
-
-        if (
-          !Array.isArray(
-            zone.vertices
-          )
-          ||
-          zone.vertices.length < 3
-        ){
-
-          return;
-
-        }
-
-const centroid =
-  polygonCentroid(
-    zone.vertices
-  );
-
-const polygon =
-  L.polygon(
-    zone.vertices,
-            {
-              color:
-                zone.zone_color,
-              weight: 2,
-
-              opacity: 0.95,
-
-              fill: true,
-
-              fillColor:
-                zone.zone_color,
-
-              fillOpacity: 0.06,
-
-              interactive: true,
-
-              bubblingMouseEvents: false
-
-            }
-          ).addTo(map);
-
-
-        const buttonIcon =
-          L.divIcon({
-
-            className:
-              "zone-btn-wrap",
-
-            html:
-              zoneButtonHtml(
-                zone,
-                favoriteCountsByZone[
-                  zone.zone_id
-                ] || 0
-              ),
-
-            iconSize: [0, 0],
-
-            iconAnchor: [0, 0]
-
-          });
-
-
-        const button =
-          L.marker(
-            centroid,
-            {
-
-              icon:
-                buttonIcon,
-
-              interactive: true,
-
-              keyboard: false,
-
-              zIndexOffset: 500
-
-            }
-          ).addTo(map);
-
-
-        const state = {
-
-          zone: zone,
-
-          centroid: centroid,
-
-          button: button,
-
-          polygon: polygon,
-
-          vendorLayers: [],
-
-          active: false
-
-        };
-
-
-        zoneState[
-          zone.zone_id
-        ] = state;
-
-
-        function onActivate(e){
-
-          if (e){
-
-            L.DomEvent.stop(e);
-
-          }
-
-
-          map.closePopup();
-
-
-          activateZone(
-            zone.zone_id
-          );
-
-        }
-
-
-        polygon.on(
-          "click",
-          onActivate
-        );
-
-
-        button.on(
-          "click",
-          onActivate
-        );
-
-      }
-    );
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Build vendor dots for a zone only when the zone is opened.
-   * ------------------------------------------------------------
-   */
-
-  function buildVendorLayers(
-    zoneId
-  ){
-
-    const state =
-      zoneState[zoneId];
-
-
-    if (
-      !state ||
-      state.vendorLayers.length
-    ){
 
       return;
-
     }
 
-
-    const list =
-      boothsByZone[
-        zoneId
-      ] || [];
-
-
-    const color =
-      state.zone.zone_color;
-
-
-    list.forEach(
-      booth => {
-
-        const vendor =
-          vendorById[
-            booth.vendor_id
-          ];
-
-
-        if (!vendor){
-
-          return;
-
-        }
-
-    const latlng =
-      L.latLng(
-        Number(booth.latitude),
-        Number(booth.longitude)
-      );
-
-        const radius =
-          dotRadiusFor(
-            booth.latitude,
-            map.getZoom()
-          );
-
-
-        /*
-         * Invisible larger hit target.
-         */
-
-        const hit =
-          L.circleMarker(
-            latlng,
-            {
-
-              radius:
-                Math.max(
-                  radius +
-                    HIT_PADDING_PX,
-                  MIN_HIT_RADIUS
-                ),
-
-              stroke: false,
-
-              fill: true,
-
-              fillOpacity: 0.001,
-
-              interactive: true,
-
-              bubblingMouseEvents: false,
-
-              pane: "markerPane"
-
-            }
-          );
-
-
-        /*
-         * Visible booth dot.
-         *
-         * Favorite booths get the white outline.
-         */
-
-        const isFavorite =
-          favoriteVendorIds.has(
-            vendor.vendor_id
-          );
-
-
-        const dot =
-          L.circleMarker(
-            latlng,
-            {
-
-              radius: radius,
-
-              color:
-                isFavorite
-                  ? "#ffffff"
-                  : "#111214",
-
-              weight:
-                isFavorite
-                  ? 3.75
-                  : 1.5,
-
-              opacity: 1,
-
-              fill: true,
-
-              fillColor: color,
-
-              fillOpacity: 0.95,
-
-              interactive: false,
-
-              pane: "markerPane"
-
-            }
-          );
-
-
-        const layerRecord = {
-
-          vendor: vendor,
-
-          booth: booth,
-
-          hit: hit,
-
-          dot: dot,
-
-          radius: radius,
-
-          labelOn: false
-
-        };
-
-
-        hit.on(
-          "click",
-          (e) => {
-
-            L.DomEvent.stop(e);
-
-            openVendorPopup(
-              layerRecord
-            );
-
-          }
-        );
-
-
-        state.vendorLayers.push(
-          layerRecord
-        );
-
+      if (!hasMovedEnough(lat, lon)){
+        return;
       }
-    );
 
-  }
+      lastLat = lat;
+      lastLon = lon;
 
+      const smooth =
+        smoothPosition(lat, lon);
 
-  /*
-   * ------------------------------------------------------------
-   * Vendor popup from prototype.
-   * ------------------------------------------------------------
-   */
-
-  function openVendorPopup(
-    layerRecord
-  ){
-
-    const vendor =
-      layerRecord.vendor;
-
-
-    const booth =
-      layerRecord.booth;
-
-
-    const state =
-      zoneState[
-        booth.zone_id
-      ];
-
-
-    const color =
-      state.zone.zone_color;
-
-
-    const textColor =
-      textColorFor(
-        color
-      );
-
-
-    const boothNumber =
-      cleanBoothNumber(
-        booth.booth_number
-      );
-
-
-    const html =
-
-      '<div class="vendor-popup-inner">' +
-
-        '<div class="vendor-popup-name">' +
-
-          escapeHtml(
-            vendor.vendor_name
-          ) +
-
-        '</div>' +
-
-        (
-
-          boothNumber
-
-            ?
-
-              '<div class="vendor-popup-booth" ' +
-
-                'style="' +
-
-                  'background:' +
-                  color +
-                  ';color:' +
-                  textColor +
-
-                ';">' +
-
-                escapeHtml(
-                  boothNumber
-                ) +
-
-              '</div>'
-
-            :
-
-              ""
-
-        ) +
-
-        '<p class="vendor-popup-desc">' +
-
-          escapeHtml(
-            vendor.description || ""
-          ) +
-
-        '</p>' +
-
-      '</div>';
-
-
-    L.popup({
-
-      className:
-        "vendor-popup",
-
-      closeButton: true,
-
-      autoClose: true,
-
-      closeOnClick: false,
-
-      maxWidth: 280,
-
-      minWidth: 250,
-
-      offset: [
-        0,
-        -layerRecord.radius
-      ]
-
-    })
-
-.setLatLng(
-  L.latLng(
-    Number(booth.latitude),
-    Number(booth.longitude)
-  )
-)
-
-      .setContent(
-        html
-      )
-
-      .openOn(map);
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Activate one zone.
-   * ------------------------------------------------------------
-   */
-
-  function activateZone(
-    zoneId
-  ){
-
-    Object.keys(
-      zoneState
-    ).forEach(
-      id => {
-
-        const state =
-          zoneState[id];
-
-
-        if (
-          Number(id) ===
-          Number(zoneId)
-        ){
-
-          if (
-            state.active
-          ){
-
-            return;
-
-          }
-
-
-          buildVendorLayers(
-            state.zone.zone_id
-          );
-
-
-          map.removeLayer(
-            state.button
-          );
-
-
-          state.vendorLayers.forEach(
-            layerRecord => {
-
-              layerRecord.hit.addTo(
-                map
-              );
-
-              layerRecord.dot.addTo(
-                map
-              );
-
-            }
-          );
-
-
-          state.active = true;
-
-        }
-
-        else if (
-          state.active
-        ){
-
-          deactivateZoneState(
-            state
-          );
-
-        }
-
-      }
-    );
-
-
-    refreshVendorScaling();
-
-  }
-
-
-  function deactivateZoneState(
-    state
-  ){
-
-    state.vendorLayers.forEach(
-      layerRecord => {
-
-        if (
-          map.hasLayer(
-            layerRecord.hit
-          )
-        ){
-
-          map.removeLayer(
-            layerRecord.hit
-          );
-
-        }
-
-
-        if (
-          map.hasLayer(
-            layerRecord.dot
-          )
-        ){
-
-          map.removeLayer(
-            layerRecord.dot
-          );
-
-        }
-
-
-        if (
-          layerRecord.labelOn
-        ){
-
-          layerRecord.dot.unbindTooltip();
-
-          layerRecord.labelOn =
-            false;
-
-        }
-
-      }
-    );
-
-
-    if (
-      !map.hasLayer(
-        state.button
-      )
-    ){
-
-      state.button.addTo(
-        map
-      );
-
-    }
-
-
-    state.active = false;
-
-  }
-
-
-  function deactivateAllZones(){
-
-    Object.keys(
-      zoneState
-    ).forEach(
-      id => {
-
-        const state =
-          zoneState[id];
-
-
-        if (
-          state.active
-        ){
-
-          deactivateZoneState(
-            state
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Vendor scaling and name labels.
-   * ------------------------------------------------------------
-   */
-
- function refreshVendorScaling(){
-
-  const zoom =
-    map.getZoom();
-
-  const baseZoomForLabels =
-    mapFitZoom +
-    LABEL_MIN_ZOOM_OFFSET;
-
-  const showLabels =
-    zoom >=
-    baseZoomForLabels;
-
-
-    Object.keys(
-      zoneState
-    ).forEach(
-      id => {
-
-        const state =
-          zoneState[id];
-
-
-        if (
-          !state.active
-        ){
-
-          return;
-
-        }
-
-
-        state.vendorLayers.forEach(
-          layerRecord => {
-
-            const radius =
-              dotRadiusFor(
-                layerRecord.booth.latitude,
-                zoom
-              );
-
-
-            layerRecord.radius =
-              radius;
-
-
-            layerRecord.dot.setRadius(
-              radius
-            );
-
-
-            layerRecord.hit.setRadius(
-              Math.max(
-                radius +
-                  HIT_PADDING_PX,
-                MIN_HIT_RADIUS
-              )
-            );
-
-
-            if (
-              showLabels &&
-              !layerRecord.labelOn
-            ){
-
-              layerRecord.dot
-                .bindTooltip(
-                  escapeHtml(
-                    layerRecord.vendor.vendor_name
-                  ),
-                  {
-
-                    permanent: true,
-
-                    direction: "center",
-
-                    className:
-                      "vendor-label"
-
-                  }
-                )
-                .openTooltip();
-
-
-              layerRecord.labelOn =
-                true;
-
-            }
-
-            else if (
-              !showLabels &&
-              layerRecord.labelOn
-            ){
-
-              layerRecord.dot
-                .unbindTooltip();
-
-
-              layerRecord.labelOn =
-                false;
-
-            }
-
-          }
-        );
-
-      }
-    );
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Blank map tap returns to zone view.
-   * ------------------------------------------------------------
-   */
-
-  map.on(
-    "click",
-    () => {
-
-      map.closePopup();
-
-      deactivateAllZones();
-
-    }
+const point =
+  latLonToImagePoint(
+    smooth.lat,
+    smooth.lon
   );
 
-
-  map.on(
-    "zoomend",
-    refreshVendorScaling
-  );
-
-
-  /*
-   * ------------------------------------------------------------
-   * Keep the map correctly sized when the page layout changes.
-   * ------------------------------------------------------------
-   */
-
-let userHasZoomedOrPanned = false;
-
-map.on(
-  "zoomstart dragstart",
-  function(){
-    userHasZoomedOrPanned = true;
-  }
+gpsMarker.setRadius(
+  getGpsRadius(accuracyFt)
 );
 
-function resyncMapSize(){
+gpsMarker.setLatLng(point);
 
-  map.invalidateSize({
-    animate: false
-  });
+if (currentView !== 'fair') {
 
-  if (
-    !userHasZoomedOrPanned
-  ){
-    fitWholeMap();
+  if (gpsVisible) {
+
+    map.removeLayer(gpsMarker);
+
+    gpsVisible = false;
   }
-  else {
-    map.setMinZoom(
-      computeWholeMapZoom()
-    );
-  }
+
+  return;
 }
 
-fitWholeMap();
+if (!gpsVisible) {
 
-if (
-  "ResizeObserver" in window
-){
+  gpsMarker.addTo(map);
 
-  const mapElement =
-    document.getElementById(
-      "galleryMap"
-    );
-
-  const mapResizeObserver =
-    new ResizeObserver(
-      function(){
-        resyncMapSize();
-      }
-    );
-
-  mapResizeObserver.observe(
-    mapElement
-  );
-
+  gpsVisible = true;
 }
-else {
+    },
 
-  window.addEventListener(
-    "resize",
-    resyncMapSize
+    (err) => {
+
+    console.log("GPS error:", err);
+
+    const gpsStatus =
+      document.getElementById('gpsStatus');
+
+    if (gpsStatus) {
+
+      gpsStatus.innerHTML =
+        "Location Dot Will Appear When at Festival";
+    }
+
+    if (gpsVisible) {
+
+      map.removeLayer(gpsMarker);
+
+      gpsVisible = false;
+    }
+
+    },
+
+    {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 10000
+    }
   );
-
 }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Load the SAME favorite IDs used by Explore before drawing
-   * the zone buttons.
-   *
-   * favorites_db.js already supplies this function.
-   * ------------------------------------------------------------
-   */
-
-  try {
-
-    const ids =
-      await loadFavoriteIdsFromDB();
-
-
-    favoriteVendorIds =
-      new Set(ids);
-
-  }
-
-  catch (err){
-
-    console.error(
-      "Could not load favorites for festival map:",
-      err
-    );
-
-
-    favoriteVendorIds =
-      new Set();
-
-  }
-
-
-  /*
-   * ------------------------------------------------------------
-   * Draw the zones after favorites have been loaded so the
-   * favorite counts appear immediately.
-   * ------------------------------------------------------------
-   */
-
-  buildZones(
-    computeFavoriteCountsByZone()
-  );
 
 }
 

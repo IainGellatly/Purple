@@ -36,7 +36,7 @@ APP_SERVER_PORT = 8000
 APP_SERVER_WORKERS = 1
 DB_POOL_PER_WORKER = 10
 DB_HOST = 'localhost'
-DB_NAME = 'fairdb'
+DB_NAME = 'purpledb'
 DB_USER = 'admin'
 DB_PASSWORD = 'FanTab12345!'
 VOTING_MODE = "daily"   # "single" or "daily"
@@ -259,11 +259,52 @@ async def alert_scheduler():
 # ------------- SERVER ENDPOINTS ------------
 @app.get("/api/sponsors")
 async def get_sponsors():
-
     qry = "select * from sponsors order by tier_order, name;"
     result = await get_data(qry)
-
     return json_response(result)
+
+@app.get('/api/vendors')
+async def get_vendors():
+    sql = '''select 
+        vendor_id,
+        vendor_name,
+        description,
+        category,
+        vendor_type,
+        booth_number,
+        featured_product_1,
+        featured_product_2,
+        featured_product_3,
+        search_index
+     from vendor;'''
+    rows = await get_data(sql)
+    return json_response(rows)
+
+@app.get('/api/categories')
+async def get_categories():
+    sql = '''select distinct category 
+        from vendor where category is not null;'''
+    rows = await get_data(sql)
+    return json_response(rows)
+
+@app.get('/api/booths')
+async def get_booths():
+    sql = '''select 
+        booth_id,
+        vendor_id,
+        zone_id,
+        booth_number,
+        latitude,
+        longitude
+     from booth;'''
+    rows = await get_data(sql)
+    return json_response(rows)
+
+@app.get('/api/zones')
+async def get_zones():
+    sql = 'select * from zone;'
+    rows = await get_data(sql)
+    return json_response(rows)
 
 @app.get('/api/candidates/{can_type}')
 async def get_candidates(can_type: str):
@@ -489,31 +530,56 @@ async def submit_vote(request: Request):
                 existing = await get_data(check_sql)
 
                 if existing:
-                    return {"status": "already_voted"}
+                    return {"status": "already voted"}
 
-                for category, tenant_id in votes.items():
+                early_sql = f'''
+                    select 1 from device_first_seen 
+                    where device_id = "{device_id}" 
+                    and timestampdiff(second, first_seen, now()) < 180;
+                '''
+                early_vote = await get_data(early_sql)
 
-                    if not tenant_id:
+                vote_stat = 'withheld' if early_vote else 'accepted'
+
+                for category, vendor_id in votes.items():
+
+                    if not vendor_id:
                         continue
 
                     # insert vote (prevents duplicates)
                     await cursor.execute(f"""
-                        insert into votes (device_id, category, tenant_id, vote_date)
-                        values ("{device_id}", "{category}", {tenant_id}, curdate())
+                        insert into votes ( 
+                            device_id, 
+                            category, 
+                            vendor_id, 
+                            vote_date, 
+                            vote_status 
+                        ) values ( 
+                            "{device_id}", 
+                            "{category}", 
+                            {vendor_id}, 
+                            curdate(), 
+                            {vote_stat}
+                        );
                     """)
 
-                    # increment totals
-                    await cursor.execute(f"""
-                        insert into vote_totals (category, tenant_id, tenant_name, vote_count)
-                        select 
-                            "{category}",
-                            t.tenant_id,
-                            t.name,
-                            1
-                        from tenants t
-                        where t.tenant_id = {tenant_id}
-                        on duplicate key update vote_count = vote_count + 1;
-                    """)
+                    # increment totals only for accepted votes
+                    if vote_stat == 'accepted':
+                        await cursor.execute(f"""
+                            insert into vote_totals (
+                                category, 
+                                vendor_id, 
+                                vendor_name, 
+                                vote_count )
+                            select 
+                                "{category}",
+                                t.vendor_id,
+                                t.vendor_name,
+                                1
+                            from vendor t
+                            where t.vendor_id = {vendor_id}
+                            on duplicate key update vote_count = vote_count + 1;
+                        """)
 
                 await conn.commit()
 
@@ -528,17 +594,17 @@ async def submit_vote(request: Request):
 async def get_vote_results():
 
     sql = """
-        select category, tenant_id, tenant_name, vote_count
+        select category, vendor_id, vendor_name, vote_count
         from vote_totals
-        order by category, vote_count desc;
+        order by category, vote_count desc, vendor_name;
     """
 
     rows = await get_data(sql)
 
     result = {
         "food": [],
-        "indoor": [],
-        "outdoor": []
+        "artisan": [],
+        "music": []
     }
 
     for r in rows:
@@ -573,6 +639,17 @@ async def vote_status(device_id: str):
     voted = [r["category"] for r in rows]
 
     return voted
+
+# ----------------- FIRST SEEN  -------------------
+@app.post("/api/device_first_seen/{device_id}")
+async def device_first_seen(device_id: str):
+    sql = f'''
+        insert into device_first_seen
+        (device_id) values ("{device_id}")
+        on duplicate key update device_id = device_id;
+    '''
+    rows = await run_cmd(sql)
+    return {"status": "ok"}
 
 # ----------------- SURVEY -------------------
 @app.get("/api/survey/status/{device_id}")
@@ -753,5 +830,10 @@ async def get_app():
     result = await get_data(qry)
 
     return json_response(result)
+
+# ---------------- TEST MAP --------------------
+@app.get("/festival_map", response_class=HTMLResponse)
+async def claude_map():
+    return FileResponse("static/festival_map.html")
 
 

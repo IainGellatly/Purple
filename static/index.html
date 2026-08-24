@@ -17,12 +17,12 @@
 <link rel="apple-touch-icon"
       href="/static/favicon.png">
 
-    <title>Purple Painted Lady Festival</title>
+    <title>The Purple Painted Lady Festival</title>
 
 </head>
 <body>
 
-<img src="/static/icons/menu/logo.webp" class="logo" alt="logo"/>
+<img src="/static/icons/pplf.webp" class="logo" alt="logo"/>
 
 <div id="installContainer" style="display:none;">
 
@@ -47,6 +47,11 @@
   <!-- FEATURED ROW -->
   <div class="featured-row">
 
+      <div class="icon-card" data-page="times">
+      <img src="/static/icons/menu/times.webp" alt="faqs">
+      <div>Times</div>
+    </div>
+
     <div class="icon-card" data-page="directions">
       <img src="/static/icons/menu/directions.webp" alt="directions">
       <div>Directions</div>
@@ -57,16 +62,12 @@
       <div>Parking</div>
     </div>
 
-    <div class="icon-card" data-page="faqs">
-      <img src="/static/icons/menu/faqs.webp" alt="faqs">
-      <div>FAQs</div>
-    </div>
   </div>
 
   <!-- ROW 2 -->
-  <div class="icon-card" data-page="search">
+  <div class="icon-card" data-page="explore">
     <img src="/static/icons/menu/search.webp" alt="search">
-    <div>Search</div>
+    <div>Explore</div>
   </div>
 
   <div class="icon-card" data-page="map">
@@ -74,31 +75,21 @@
     <div>Map</div>
   </div>
 
-  <div class="icon-card" data-page="vote">
-    <img src="/static/icons/menu/vote.webp" alt="vote">
-    <div>Vote</div>
-  </div>
-
-  <!-- ROW 3 -->
-  <div class="icon-card" data-page="food">
-    <img src="/static/icons/menu/food.webp" alt="food">
-  <div>Food</div>
-  </div>
-
-  <div class="icon-card" data-page="vendors">
-    <img src="/static/icons/menu/vendors.webp" alt="vendors">
-    <div>Vendors</div>
-  </div>
-
   <div class="icon-card" data-page="music">
     <img src="/static/icons/menu/music.webp" alt="music">
     <div>Music</div>
   </div>
 
-  <!-- ROW 4 -->
-  <div class="icon-card" data-page="firstaid">
-    <img src="/static/icons/menu/first_aid.webp" alt="firstaid">
-    <div>First Aid</div>
+  <!-- ROW 3 -->
+
+  <div class="icon-card" data-page="vote">
+    <img src="/static/icons/menu/vote.webp" alt="vote">
+    <div>Vote</div>
+  </div>
+
+  <div class="icon-card" data-page="sponsors">
+    <img src="/static/icons/menu/sponsor.webp" alt="sponsors">
+    <div>Sponsors</div>
   </div>
 
   <div class="icon-card" data-page="survey">
@@ -106,25 +97,38 @@
     <div>Free Coffee</div>
   </div>
 
+  <!-- ROW 4 -->
+
   <div class="icon-card" data-page="facilities">
     <img src="/static/icons/menu/facilities.webp" alt="facilities">
     <div>Facilities</div>
   </div>
 
-  <!-- ROW 5 -->
-  <div class="icon-card" data-page="sponsors">
-    <img src="/static/icons/menu/sponsor.webp" alt="sponsors">
-    <div>Sponsors</div>
-  </div>
-
-  <div class="icon-card">
-    <img src="/static/icons/menu/logo.webp" alt="more">
-    <div></div>
-  </div>
-
   <div class="icon-card" data-page="about">
     <img src="/static/icons/menu/about.webp" alt="about">
     <div>About</div>
+  </div>
+
+  <div class="icon-card" data-page="firstaid">
+    <img src="/static/icons/menu/first_aid.webp" alt="firstaid">
+    <div>First Aid</div>
+  </div>
+
+  <!-- ROW 5 -->
+
+  <div class="icon-card">
+    <img src="/static/icons/van.webp" alt="more">
+    <div></div>
+  </div>
+
+  <div class="icon-card" data-page="faqs">
+    <img src="/static/icons/menu/faqs.webp" alt="faqs">
+    <div>FAQs</div>
+  </div>
+
+  <div class="icon-card">
+    <img src="/static/icons/van.webp" alt="more">
+    <div></div>
   </div>
 
 </div>
@@ -134,20 +138,26 @@
 
 <script src="/static/js/jszip.min.js"></script>
 
-<script src="/static/cache.js"></script>
+<script src="/static/cache.js?v=130"></script>
 
 <script>
-(async () => {
-
-  await CacheManager.init();
-
-})();
+window.cacheReady = CacheManager.init();
 </script>
 
-<script src="/static/app.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js">
+</script>
+
+<script src="/static/explore_db.js?v=130"></script>
+
+<script src="/static/explore_keyboard.js?v=130"></script>
+
+<script src="/static/explore_app.js?v=130"></script>
+
+<script src="/static/app.js?v=130"></script>
 
 <script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
 
 <div id="footerLogo">
