@@ -283,7 +283,9 @@ async def get_vendors():
 @app.get('/api/categories')
 async def get_categories():
     sql = '''select distinct category 
-        from vendor where category is not null;'''
+        from vendor 
+        where category is not null
+        order by category;'''
     rows = await get_data(sql)
     return json_response(rows)
 

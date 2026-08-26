@@ -145,6 +145,22 @@ let todayRefreshTimer = null;
 let savedScrollY = 0;
 let gpsWatchId = null;
 
+// ============================================================
+// TEMPORARY GPS TEST MODE
+// Set TEST_GPS_ENABLED to false before production.
+// ============================================================
+
+const TEST_GPS_ENABLED = false;
+
+//const TEST_GPS_LAT = 43.042016;    //parking location
+//const TEST_GPS_LON = -77.252877;
+
+const TEST_GPS_LAT = 43.040637;    //near house location
+const TEST_GPS_LON = -77.257733;
+
+const TEST_GPS_ACCURACY_FEET = 20;
+
+
 let subscriptionId = 0;
 let pushAuthorized = false;
 let alertSet = new Set();
@@ -643,7 +659,7 @@ async function loadExplore() {
                             Explore and Find
                         </div>
                         <div class="ticket-header-subtitle">
-                            Talk, type or tap to find your favorites
+                            Type, tap or talk to find your favorites!
                         </div>
                     </div>
                     <div class="ticket-header-date">
@@ -816,6 +832,668 @@ async function loadExplore() {
     } catch (err) {
 
         console.error("Explore failed to load:", err);
+
+        content.innerHTML =
+            `<div class="card">
+                Updating info. Drag down to refresh.
+            </div>`;
+    }
+}
+
+// ============================================================
+// PARKING SPOT
+// ============================================================
+
+const PARKING_SPOT_KEY = "parking_spot";
+
+async function getParkingSpot() {
+
+    return await CacheManager.getMetadata(
+        PARKING_SPOT_KEY
+    );
+
+}
+function getCurrentPosition() {
+
+    if (TEST_GPS_ENABLED){
+
+        return Promise.resolve({
+
+            coords: {
+
+                latitude:
+                    TEST_GPS_LAT,
+
+                longitude:
+                    TEST_GPS_LON,
+
+                accuracy:
+                    TEST_GPS_ACCURACY_FEET /
+                    3.28084
+
+            }
+
+        });
+
+    }
+
+
+    return new Promise((resolve, reject) => {
+
+        if (!("geolocation" in navigator)) {
+
+            reject(
+                new Error("Geolocation is not available.")
+            );
+
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 15000
+            }
+        );
+
+    });
+
+}
+
+
+async function markParkingSpot() {
+
+    const button =
+        document.getElementById(
+            "parking-mark-button"
+        );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Finding Your Location...";
+    }
+
+
+    try {
+
+        const position =
+            await getCurrentPosition();
+
+
+        const latitude =
+            position.coords.latitude;
+
+        const longitude =
+            position.coords.longitude;
+
+        const accuracyMeters =
+            position.coords.accuracy || 0;
+
+        const accuracyFeet =
+            Math.round(
+                accuracyMeters * 3.28084
+            );
+
+
+        const existingSpot =
+            await getParkingSpot();
+
+
+        let message;
+
+
+        if (existingSpot) {
+
+            message =
+                `Replace your saved parking spot with your current location?\n\n` +
+                `GPS accuracy is approximately ±${accuracyFeet} feet.`;
+
+        } else {
+
+            message =
+                `Save this as your parking spot?\n\n` +
+                `GPS accuracy is approximately ±${accuracyFeet} feet.`;
+
+        }
+
+
+        if (!confirm(message)) {
+
+            return;
+
+        }
+
+
+        await CacheManager.setMetadata(
+
+            PARKING_SPOT_KEY,
+
+            {
+                latitude: latitude,
+                longitude: longitude,
+                accuracyFeet: accuracyFeet,
+                savedAt: Date.now()
+            }
+
+        );
+
+
+        if (button) {
+
+            button.textContent =
+                "Parking Spot Saved!";
+
+        }
+
+
+        const status =
+            document.getElementById(
+                "parking-status"
+            );
+
+        if (status) {
+
+            status.textContent =
+                "Your car is saved on the festival map.";
+
+        }
+
+
+        setTimeout(() => {
+
+            if (button) {
+                button.textContent =
+                    "Update My Spot";
+            }
+
+        }, 1800);
+
+
+    } catch (err) {
+
+        console.error(
+            "Unable to save parking spot:",
+            err
+        );
+
+
+        if (err.code === 1) {
+
+            alert(
+                "Location access was not allowed.\n\n" +
+                "Please allow location access for the Purple App " +
+                "and try again."
+            );
+
+        } else if (err.code === 2) {
+
+            alert(
+                "Your location could not be determined.\n\n" +
+                "Please try again in a moment."
+            );
+
+        } else if (err.code === 3) {
+
+            alert(
+                "Finding your location took too long.\n\n" +
+                "Please try again."
+            );
+
+        } else {
+
+            alert(
+                "Unable to determine your location.\n\n" +
+                "Please try again."
+            );
+
+        }
+
+    } finally {
+
+        if (button) {
+
+            button.disabled = false;
+
+            if (
+                button.textContent ===
+                "Finding Your Location..."
+            ) {
+
+                button.textContent =
+                    "Mark My Parking Spot";
+
+            }
+
+        }
+
+    }
+
+}
+
+
+function parkingDistanceMeters(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const R = 6371000;
+
+    const dLat =
+        (lat2 - lat1) *
+        Math.PI / 180;
+
+    const dLon =
+        (lon2 - lon1) *
+        Math.PI / 180;
+
+
+    const a =
+        Math.sin(dLat / 2) *
+        Math.sin(dLat / 2) +
+
+        Math.cos(
+            lat1 * Math.PI / 180
+        ) *
+
+        Math.cos(
+            lat2 * Math.PI / 180
+        ) *
+
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+
+    return R * c;
+
+}
+
+
+function formatParkingDistance(
+    meters
+) {
+
+    const feet =
+        meters * 3.28084;
+
+
+    if (feet < 528) {
+
+        return {
+            text:
+                `${Math.max(10, Math.round(feet / 10) * 10)} feet`,
+            miles:
+                feet / 5280
+        };
+
+    }
+
+
+    const miles =
+        feet / 5280;
+
+
+    return {
+        text:
+            `${miles.toFixed(1)} miles`,
+        miles:
+            miles
+    };
+
+}
+
+
+function parkingWalkingMinutes(
+    miles
+) {
+
+    if (miles < 0.01) {
+        return 0;
+    }
+
+
+    // 1.8 mph average walking speed
+    return Math.max(
+        1,
+        Math.round(
+            (miles / 1.8) * 60
+        )
+    );
+
+}
+
+
+async function showParkingDistance(
+    map,
+    parkingMarker,
+    parkingSpot
+) {
+
+    try {
+
+        const position =
+            await getCurrentPosition();
+
+
+        const currentLat =
+            position.coords.latitude;
+
+        const currentLon =
+            position.coords.longitude;
+
+
+        const meters =
+            parkingDistanceMeters(
+
+                currentLat,
+                currentLon,
+
+                Number(parkingSpot.latitude),
+                Number(parkingSpot.longitude)
+
+            );
+
+
+        const distance =
+            formatParkingDistance(
+                meters
+            );
+
+
+        const minutes =
+            parkingWalkingMinutes(
+                distance.miles
+            );
+
+
+        let html;
+
+
+        if (minutes === 0) {
+
+            html = `
+                <div class="parking-popup">
+                    <div class="parking-popup-title">
+                        🚗 Your Car
+                    </div>
+
+                    <div class="parking-popup-distance">
+                        You're here!
+                    </div>
+                </div>
+            `;
+
+        } else {
+
+            html = `
+                <div class="parking-popup">
+                    <div class="parking-popup-title">
+                        🚗 Your Car
+                    </div>
+
+                    <div class="parking-popup-distance">
+                        ${distance.text} away
+                    </div>
+
+                    <div class="parking-popup-time">
+                        About ${minutes} min walk
+                    </div>
+                </div>
+            `;
+
+        }
+
+
+        parkingMarker
+            .bindPopup(
+                html,
+                {
+                    maxWidth: 220
+                }
+            )
+            .openPopup();
+
+
+    } catch (err) {
+
+        console.error(
+            "Unable to update parking distance:",
+            err
+        );
+
+
+        alert(
+            "We could not determine your current location.\n\n" +
+            "Please try again."
+        );
+
+    }
+
+}
+
+
+async function addParkingMarkerToMap(
+    map
+) {
+
+    const parkingSpot =
+        await getParkingSpot();
+
+
+    if (
+        !parkingSpot ||
+        !Number.isFinite(
+            Number(parkingSpot.latitude)
+        ) ||
+        !Number.isFinite(
+            Number(parkingSpot.longitude)
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const parkingIcon =
+        L.divIcon({
+
+            className:
+                "parking-map-icon",
+
+            html:
+                `<div class="parking-map-dot">🚗</div>`,
+
+            iconSize: [34, 34],
+
+            iconAnchor: [17, 17]
+
+        });
+
+
+    const parkingMarker =
+        L.marker(
+
+            [
+                Number(parkingSpot.latitude),
+                Number(parkingSpot.longitude)
+            ],
+
+            {
+                icon:
+                    parkingIcon,
+
+                zIndexOffset:
+                    2000,
+
+                keyboard:
+                    false,
+
+                title:
+                    "Your Parking Spot"
+            }
+
+        ).addTo(map);
+
+
+    parkingMarker.on(
+        "click",
+        function(e) {
+
+            L.DomEvent.stopPropagation(e);
+
+            showParkingDistance(
+                map,
+                parkingMarker,
+                parkingSpot
+            );
+
+        }
+    );
+
+
+    return parkingMarker;
+
+}
+
+async function loadParking() {
+
+    await window.cacheReady;
+
+    console.log("loadParking()");
+
+    const content = document.getElementById("content");
+
+    try {
+        const html = `
+            <div class="parking-page">
+                <div class="ticket-header">
+                    <img
+                        class="ticket-header-bg"
+                        src="/static/icons/ticket_fill_pplf.png"
+                        alt="ticket">
+                    <div class="ticket-header-content">
+                        <div class="ticket-header-logo">
+                            <img src="/static/icons/van.webp" alt="van">
+                        </div>
+                        <div class="ticket-header-text">
+                            <div class="ticket-header-title">
+                                Festival Parking
+                            </div>
+                            <div class="ticket-header-subtitle">
+                                Mark Your Spot as You Start Your Great Purple Day!
+                            </div>
+                        </div>
+                        <div class="ticket-header-date">
+                            9/19-20, 2026
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div class="ui-card">
+    <div class="ui-card-media">
+      <img src="/static/icons/van.webp" alt="van">
+    </div>
+    <div class="ui-card-content">
+        <div class="ui-card-title">
+            Visitor Parking
+        </div>
+        <div class="ui-card-body">
+            <p>
+                <b>Parking is FREE</b>
+            </p>
+            <p>
+                Parking is managed by Palmyra Community Center and Palmyra-Macedon Rotary, who
+                benefit from this event.
+            </p>
+                <ul style="padding-left: 1rem; margin-left: 0;">
+                    <li>Volunteers will guide you to your spot</li>
+                    <li>Wind down window to hear directions</li>
+                    <li>Field parking is not good for low or luxury vehicles</li>
+                    <li><b>NO</b> parking on the road</li>
+                    <li>Come from the North for handicap parking</li>
+                    <li>Please have your handicap tag visible</li>
+                </ul>
+        </div>
+    </div>
+</div>
+
+<div class="ui-card">
+    <div class="ui-card-media">
+      <img src="/static/icons/van.webp" alt=van>
+    </div>
+    <div class="ui-card-content">
+        <div class="ui-card-title">
+            No Smoking or Pets Please
+        </div>
+        <div class="ui-card-body">
+            <p>
+                This is a no smoking or vaping event held on private property. Please leave those items and your pets at home. Thanks!
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="ui-card">
+    <div class="ui-card-media">
+      <img src="/static/icons/van.webp" alt="van">
+    </div>
+    <div class="ui-card-content">
+        <div class="ui-card-title">
+            Mark Your Spot
+        </div>
+        <div class="ui-card-body">
+            <p>
+                <b>Tap below to mark your parking spot</b>
+            </p>
+            <p>
+                Check the <b>Map</b> above when you leave for location and distance!
+            </p>
+        </div>
+    </div>
+</div>
+
+<div>
+<br>
+</div>
+
+<button
+    id="parking-mark-button"
+    class="map-button"
+    type="button"
+    onclick="markParkingSpot()">
+
+    Mark My Parking Spot
+
+</button>
+
+
+<div
+    id="parking-status"
+    class="parking-status">
+</div>
+
+        `;
+
+        await CacheManager.renderHtml(content, html);
+        scrollToContent();
+
+    } catch (err) {
+
+        console.error("Parking failed to load:", err);
 
         content.innerHTML =
             `<div class="card">
@@ -2198,7 +2876,7 @@ async function renderSurveyThankYou(){
 
         <img src="/static/icons/van.webp" class="coupon-logo" />
 
-        <div class="coupon-amount">FREE MEDIUM COFFEE</div>
+        <div class="coupon-amount">FREE SMALL COFFEE</div>
 
         <div class="coupon-location">at</div>
         <div class="coupon-location">The Purple Painted Lady Store</div>
@@ -2374,8 +3052,8 @@ zones.forEach(zone => {
 
   const mapImage =
     await CacheManager.getMediaUrl(
-      "/static/maps/festival_map.jpg"
-    ) || "/static/maps/festival_map.jpg";
+      "/static/maps/festival_map.webp"
+    ) || "/static/maps/festival_map.webp";
 
 
   /*
@@ -2431,10 +3109,10 @@ zones.forEach(zone => {
    */
 
 const MAP_BOUNDS = {
-  north: 43.041382,
-  south: 43.039711,
-  west: -77.259224,
-  east: -77.257058
+  north: 43.042796,
+  south: 43.039288,
+  west: -77.259872,
+  east: -77.252045
 };
 
 const imageBounds =
@@ -2535,17 +3213,17 @@ function computeWholeMapZoom(){
       refZoom
     );
 
-  const imageWidthPx =
+  const imageHeightPx =
     Math.abs(
-      se.x - nw.x
+      se.y - nw.y
     );
 
-  const scaleX =
-    rect.width /
-    imageWidthPx;
+  const scaleY =
+    rect.height /
+    imageHeightPx;
 
   return map.getScaleZoom(
-    scaleX,
+    scaleY,
     refZoom
   );
 }
@@ -2559,8 +3237,50 @@ function fitWholeMap(){
     mapFitZoom
   );
 
+  const rect =
+    document
+      .getElementById(
+        "galleryMap"
+      )
+      .getBoundingClientRect();
+
+  const nw =
+    map.project(
+      imageBounds.getNorthWest(),
+      mapFitZoom
+    );
+
+  const se =
+    map.project(
+      imageBounds.getSouthEast(),
+      mapFitZoom
+    );
+
+  /*
+   * Position the viewport so that the
+   * LEFT edge of the map image is
+   * aligned with the LEFT edge of
+   * the viewing window.
+   */
+
+  const targetX =
+    nw.x +
+    (rect.width / 2);
+
+  const targetY =
+    (nw.y + se.y) / 2;
+
+  const targetCenter =
+    map.unproject(
+      L.point(
+        targetX,
+        targetY
+      ),
+      mapFitZoom
+    );
+
   map._resetView(
-    imageBounds.getCenter(),
+    targetCenter,
     mapFitZoom
   );
 }
@@ -2731,20 +3451,24 @@ function fitWholeMap(){
 
   if ("geolocation" in navigator){
 
-    gpsWatchId =
-      navigator.geolocation.watchPosition(
+gpsWatchId =
+  navigator.geolocation.watchPosition(
+    (pos) => {
 
-        (pos) => {
+      const lat =
+        TEST_GPS_ENABLED
+          ? TEST_GPS_LAT
+          : pos.coords.latitude;
 
-          const lat =
-            pos.coords.latitude;
+      const lon =
+        TEST_GPS_ENABLED
+          ? TEST_GPS_LON
+          : pos.coords.longitude;
 
-          const lon =
-            pos.coords.longitude;
-
-
-          const accuracyMeters =
-            pos.coords.accuracy || 9999;
+      const accuracyMeters =
+        TEST_GPS_ENABLED
+          ? TEST_GPS_ACCURACY_FEET / 3.28084
+          : (pos.coords.accuracy || 9999);
 
 
           const accuracyFt =
@@ -3083,7 +3807,7 @@ function fitWholeMap(){
 
   const MIN_HIT_RADIUS = 16;
 
-  const LABEL_MIN_ZOOM_OFFSET = 2.5;
+  const LABEL_MIN_ZOOM_OFFSET = 3.2;
 
 
   function metersPerPixel(lat, zoom){
@@ -3687,7 +4411,7 @@ const polygon =
    * ------------------------------------------------------------
    */
 
-  function openVendorPopup(
+   function openVendorPopup(
     layerRecord
   ){
 
@@ -3721,54 +4445,74 @@ const polygon =
       );
 
 
-    const html =
+    const products = [
+      vendor.featured_product_1,
+      vendor.featured_product_2,
+      vendor.featured_product_3
+    ].filter(product =>
+      product !== null &&
+      product !== undefined &&
+      String(product).trim() !== ""
+    );
 
+
+    let productsHtml = "";
+
+
+    if (products.length > 0) {
+
+      productsHtml =
+        '<div class="vendor-popup-products">' +
+          '<div class="vendor-popup-products-title">' +
+            'Featured Products' +
+          '</div>' +
+          products.map(product =>
+            '<div class="vendor-popup-product">' +
+              '• ' +
+              escapeHtml(
+                String(product).trim()
+              ) +
+            '</div>'
+          ).join("") +
+        '</div>';
+
+    }
+
+
+    const html =
       '<div class="vendor-popup-inner">' +
 
         '<div class="vendor-popup-name">' +
-
           escapeHtml(
             vendor.vendor_name
           ) +
-
         '</div>' +
 
         (
-
           boothNumber
-
             ?
-
               '<div class="vendor-popup-booth" ' +
-
                 'style="' +
-
                   'background:' +
                   color +
                   ';color:' +
                   textColor +
-
                 ';">' +
-
                 escapeHtml(
                   boothNumber
                 ) +
-
               '</div>'
-
             :
-
               ""
-
         ) +
 
         '<p class="vendor-popup-desc">' +
-
           escapeHtml(
             vendor.description || ""
           ) +
-
         '</p>' +
+
+        productsHtml +
 
       '</div>';
 
@@ -3795,12 +4539,12 @@ const polygon =
 
     })
 
-.setLatLng(
-  L.latLng(
-    Number(booth.latitude),
-    Number(booth.longitude)
-  )
-)
+      .setLatLng(
+        L.latLng(
+          Number(booth.latitude),
+          Number(booth.longitude)
+        )
+      )
 
       .setContent(
         html
@@ -4144,9 +4888,20 @@ map.on(
 
 function resyncMapSize(){
 
+  const mapElement =
+    document.getElementById(
+      "galleryMap"
+    );
+
+  if (!mapElement){
+    return;
+  }
+
+
   map.invalidateSize({
     animate: false
   });
+
 
   if (
     !userHasZoomedOrPanned
@@ -4238,6 +4993,17 @@ else {
     computeFavoriteCountsByZone()
   );
 
+
+  /*
+   * ------------------------------------------------------------
+   * Restore the visitor's saved parking spot.
+   * ------------------------------------------------------------
+   */
+
+  await addParkingMarkerToMap(
+    map
+  );
+
 }
 
 // ---------------- PAGE ROUTER ----------------
@@ -4319,6 +5085,12 @@ if (page === "vote"){
 // --------------- VOTE ----------------
 if (page === "explore"){
   loadExplore();
+  return;
+}
+
+// --------------- PARK ----------------
+if (page === "parking"){
+  loadParking();
   return;
 }
 
