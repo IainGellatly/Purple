@@ -383,5 +383,5 @@ function updateTabCounts() {
     document.getElementById("search-tab").textContent =
         `Search (${searchResults.length})`;
     document.getElementById("favorites-tab").textContent =
-        `My Vendors (${favoriteVendorIds.size})`;
+        `My Favorites (${favoriteVendorIds.size})`;
 }

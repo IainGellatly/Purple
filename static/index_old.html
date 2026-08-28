@@ -22,9 +22,7 @@
 </head>
 <body>
 
-<img src="/static/icons/new_van.webp" class="logo" alt="logo"/>
-
-<div class="logo-subtitle">14th Annual Art Show</div>
+<img src="/static/icons/pplf.webp" class="logo" alt="logo"/>
 
 <div id="installContainer" style="display:none;">
 
@@ -41,41 +39,6 @@
 
 </div>
 
-<!-- WELCOME CARD -->
-<div id="welcomeCard" class="welcome-card">
-
-  <button
-    id="welcomeClose"
-    class="welcome-close"
-    type="button"
-    aria-label="Close welcome message">
-    ×
-  </button>
-
-  <div class="welcome-title">
-    Welcome from Tricia
-  </div>
-
-  <img
-    id="welcomeImage"
-    class="welcome-image"
-    src="/static/images/tricia_welcome.webp"
-    alt="Welcome from Tricia">
-
-  <div class="welcome-message">
-    Have a great purple day exploring
-    400 select artists, food
-    trucks, vendors and more. Please
-    stop and say hello anytime. We love
-    having you!
-  </div>
-
-  <div class="welcome-signature">
-    - Love, Tricia
-  </div>
-
-</div>
-
 <br>
 
 <!-- GRID -->
@@ -86,7 +49,7 @@
 
       <div class="icon-card" data-page="times">
       <img src="/static/icons/menu/times.webp" alt="faqs">
-      <div>Start Here</div>
+      <div>Times</div>
     </div>
 
     <div class="icon-card" data-page="directions">
@@ -102,14 +65,14 @@
   </div>
 
   <!-- ROW 2 -->
-  <div class="icon-card" data-page="food">
-    <img src="/static/icons/menu/food.webp" alt="food">
-    <div>Food</div>
+  <div class="icon-card" data-page="explore">
+    <img src="/static/icons/menu/search.webp" alt="search">
+    <div>Explore</div>
   </div>
 
-  <div class="icon-card" data-page="explore">
-    <img src="/static/icons/menu/vendors.webp" alt="artists">
-    <div>Artists</div>
+  <div class="icon-card" data-page="map">
+    <img src="/static/icons/menu/map.webp" alt="map">
+    <div>Map</div>
   </div>
 
   <div class="icon-card" data-page="music">
@@ -117,33 +80,16 @@
     <div>Music</div>
   </div>
 
-
   <!-- ROW 3 -->
-  <div class="icon-card" data-page="map">
-    <img src="/static/icons/menu/map.webp" alt="map">
-    <div>Map</div>
-  </div>
-
-  <div class="icon-card" data-page="demos">
-    <img src="/static/icons/menu/brush.webp" alt="demos">
-    <div>Demonstrations</div>
-  </div>
-
-   <div class="icon-card" data-page="sponsors">
-    <img src="/static/icons/menu/sponsor.webp" alt="sponsors">
-    <div>Sponsors</div>
-  </div>
-
-  <!-- ROW 4 -->
 
   <div class="icon-card" data-page="vote">
     <img src="/static/icons/menu/vote.webp" alt="vote">
     <div>Vote</div>
   </div>
 
-  <div class="icon-card" data-page="about">
-    <img src="/static/icons/menu/about.webp" alt="about">
-    <div>About</div>
+  <div class="icon-card" data-page="sponsors">
+    <img src="/static/icons/menu/sponsor.webp" alt="sponsors">
+    <div>Sponsors</div>
   </div>
 
   <div class="icon-card" data-page="survey">
@@ -151,11 +97,28 @@
     <div>Free Coffee</div>
   </div>
 
-  <!-- ROW 5 -->
+  <!-- ROW 4 -->
 
   <div class="icon-card" data-page="facilities">
     <img src="/static/icons/menu/facilities.webp" alt="facilities">
     <div>Facilities</div>
+  </div>
+
+  <div class="icon-card" data-page="about">
+    <img src="/static/icons/menu/about.webp" alt="about">
+    <div>About</div>
+  </div>
+
+  <div class="icon-card" data-page="firstaid">
+    <img src="/static/icons/menu/first_aid.webp" alt="firstaid">
+    <div>First Aid</div>
+  </div>
+
+  <!-- ROW 5 -->
+
+  <div class="icon-card">
+    <img src="/static/icons/van.webp" alt="more">
+    <div></div>
   </div>
 
   <div class="icon-card" data-page="faqs">
@@ -163,9 +126,9 @@
     <div>FAQs</div>
   </div>
 
-  <div class="icon-card" data-page="firstaid">
-    <img src="/static/icons/menu/first_aid.webp" alt="firstaid">
-    <div>First Aid</div>
+  <div class="icon-card">
+    <img src="/static/icons/van.webp" alt="more">
+    <div></div>
   </div>
 
 </div>
@@ -175,7 +138,7 @@
 
 <script src="/static/js/jszip.min.js"></script>
 
-<script src="/static/cache.js?v=173"></script>
+<script src="/static/cache.js?v=161"></script>
 
 <script>
 window.cacheReady = CacheManager.init();
@@ -185,13 +148,13 @@ window.cacheReady = CacheManager.init();
     src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js">
 </script>
 
-<script src="/static/explore_db.js?v=173"></script>
+<script src="/static/explore_db.js?v=161"></script>
 
-<script src="/static/explore_keyboard.js?v=173"></script>
+<script src="/static/explore_keyboard.js?v=161"></script>
 
-<script src="/static/explore_app.js?v=173"></script>
+<script src="/static/explore_app.js?v=161"></script>
 
-<script src="/static/app.js?v=173"></script>
+<script src="/static/app.js?v=161"></script>
 
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
@@ -202,7 +165,7 @@ window.cacheReady = CacheManager.init();
   <div class="footer-row">
     <div class="footer-side">Sept 19-20, 2026</div>
 
-    <img src="/static/icons/new_van.webp" alt="logot" onclick="goHome()" />
+    <img src="/static/icons/menu/van.webp" alt="logot" onclick="goHome()" />
 
     <div class="footer-side">Palmyra, New York</div>
   </div>

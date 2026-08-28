@@ -656,10 +656,10 @@ async function loadExplore() {
                     </div>
                     <div class="ticket-header-text">
                         <div class="ticket-header-title">
-                            Explore and Find
+                            Artists & Crafters
                         </div>
                         <div class="ticket-header-subtitle">
-                            Type, tap or talk to find your favorites!
+                            Type, tap or talk to explore!
                         </div>
                     </div>
                     <div class="ticket-header-date">
@@ -694,7 +694,7 @@ async function loadExplore() {
                         class="browse-button"
                         type="button">
 
-                        <span>Browse Vendors</span>
+                        <span>Browse Artists</span>
                         <span class="browse-arrow">▼</span>
 
                     </button>
@@ -787,7 +787,7 @@ async function loadExplore() {
                         id="favorites-tab"
                         class="tab-button inactive-tab"
                         type="button">
-                        My Vendors (0)
+                        My Favorites (0)
                     </button>
 
                 </div>
@@ -805,7 +805,7 @@ async function loadExplore() {
                 class="map-button"
                 type="button">
 
-                Map My Vendors
+                Map My Favorites
 
             </button>
 
@@ -1416,7 +1416,7 @@ async function loadParking() {
                 <b>Parking is FREE</b>
             </p>
             <p>
-                Parking is managed by Palmyra Community Center and Palmyra-Macedon Rotary, who
+                Parking is managed by Palmyra Community Center, who
                 benefit from this event.
             </p>
                 <ul style="padding-left: 1rem; margin-left: 0;">
@@ -1426,6 +1426,7 @@ async function loadParking() {
                     <li><b>NO</b> parking on the road</li>
                     <li>Come from the North for handicap parking</li>
                     <li>Please have your handicap tag visible</li>
+                    <li>Golf cart shuttle service is available</li>
                 </ul>
         </div>
     </div>
@@ -1519,7 +1520,8 @@ const cachedPages = [
   "firstaid",
   "facilities",
   "about",
-  "times"
+  "times",
+  "demos"
 ];
 
 if (cachedPages.includes(page)) {
@@ -1563,7 +1565,8 @@ if (cachedPages.includes(page)) {
       about: "About the Festival",
       directions: "Directions",
       firstaid: "First Aid Station",
-      times: "Festival Times",
+      times: "Start Your Day Here",
+      demos: "Live Demos",
       parade: 'Fair Parade',
       exhibits: 'Judged Exhibits',
       tasting: 'Beer & Wine Tasting',
@@ -1577,6 +1580,7 @@ if (cachedPages.includes(page)) {
       exhibits: "Agriculture, Domestics, Animals and Much More",
       about: "Sat-Sun Sept 19-20, 2026",
       times: "Have a Great Purple Day",
+      demos: "Seen and Learn About New DIY Upcycling Products",
       directions: "The Best Way to a Great Purple Day!!",
       parade: 'Saturday, August 15th 4PM',
       tasting: 'Gourmet Food & Drink from Across the Finger Lakes'
@@ -2338,7 +2342,7 @@ const artisan =
 </div>
 
     ${renderCard("Pick Best Food", "food", "food")}
-    ${renderCard("Pick Best Artisan", "artisan", "artisan")}
+    ${renderCard("Pick Best Artist Booth", "artisan", "artisan")}
     ${renderCard("Pick Best Music", "music", "music")}
 
     <button class="vote-submit-btn" onclick="submitVote()">Submit Your Votes</button>
@@ -2536,7 +2540,7 @@ await CacheManager.renderHtml(content, `
   <h2 class="vote-results-heading">Rankings Updated <br>${ts}</h2>
 
   ${renderCard("Best Food", "food", data.food)}
-  ${renderCard("Best Artisan", "artisan", data.artisan)}
+  ${renderCard("Best Artisan Booth", "artisan", data.artisan)}
   ${renderCard("Best Music", "music", data.music)}
 
 `);
@@ -5044,7 +5048,8 @@ if (page !== "more"){
     faqs: "faqs",
     about: "about",
     firstaid: "firstaid",
-    times: "times"
+    times: "times",
+    demos: "demos"
   };
 
   if (staticPages[page]){
@@ -5646,10 +5651,103 @@ async function toggleAlert(eventId, btn){
   }
 }
 
+// ============================================================
+// WELCOME MESSAGE
+// ============================================================
+
+const WELCOME_DISMISSED_KEY = "welcome_dismissed";
+
+async function initializeWelcomeCard() {
+
+  const card =
+    document.getElementById("welcomeCard");
+
+  const closeButton =
+    document.getElementById("welcomeClose");
+
+  const image =
+    document.getElementById("welcomeImage");
+
+  if (!card || !closeButton) {
+    return;
+  }
+
+
+  // Wait until IndexedDB/cache system is ready
+  await window.cacheReady;
+
+
+  // Has the visitor already dismissed the welcome?
+  const dismissed =
+    await CacheManager.getMetadata(
+      WELCOME_DISMISSED_KEY
+    );
+
+
+  if (dismissed) {
+
+    card.style.display = "none";
+
+    return;
+  }
+
+
+  // Load the image from the existing media cache.
+  // Fall back to the normal static URL if necessary.
+  if (image) {
+
+    try {
+
+      const cachedImage =
+        await CacheManager.getMediaUrl(
+          "/static/images/tricia_welcome.png"
+        );
+
+      if (cachedImage) {
+        image.src = cachedImage;
+      }
+
+    } catch (err) {
+
+      console.warn(
+        "Unable to load cached welcome image:",
+        err
+      );
+
+      // Leave the normal /static/images/... source intact.
+    }
+  }
+
+
+  // Show welcome card
+  card.style.display = "block";
+
+
+  // Close / permanently dismiss
+  closeButton.addEventListener("click", async () => {
+
+    await CacheManager.setMetadata(
+      WELCOME_DISMISSED_KEY,
+      true
+    );
+
+    card.style.display = "none";
+
+  });
+
+}
+
 window.addEventListener("load", async () => {
 
   initializeInstallUI();
   showFacebookBrowserMessage();
+
+  // Initialize welcome message
+  try {
+    await initializeWelcomeCard();
+  } catch (err) {
+    console.warn("Welcome initialization failed", err);
+  }
 
   // CacheManager was already initialized by the bootstrap
   try {

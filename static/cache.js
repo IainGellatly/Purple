@@ -10,6 +10,7 @@ const CACHED_RESOURCES = [
   "facilities",
   "about",
   "times",
+  "demos",
   "vendors",
   "categories",
   "booths",

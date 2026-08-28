@@ -259,7 +259,8 @@ async def alert_scheduler():
 # ------------- SERVER ENDPOINTS ------------
 @app.get("/api/sponsors")
 async def get_sponsors():
-    qry = "select * from sponsors order by tier_order, name;"
+    qry = '''select * from sponsors 
+        order by tier_order, sponsor_order;'''
     result = await get_data(qry)
     return json_response(result)
 
@@ -282,9 +283,10 @@ async def get_vendors():
 
 @app.get('/api/categories')
 async def get_categories():
-    sql = '''select distinct category 
+    sql = '''select distinct category
         from vendor 
         where category is not null
+        and vendor_type = "artisan" 
         order by category;'''
     rows = await get_data(sql)
     return json_response(rows)
