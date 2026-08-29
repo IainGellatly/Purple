@@ -102,7 +102,7 @@ async def add_cache_headers(request, call_next):
     path = request.url.path
 
     # NEVER cache main HTML page
-    if path == "/":
+    if path == "/" or path == "/test":
 
         response.headers["Cache-Control"] = (
             "no-store, no-cache, must-revalidate"
@@ -119,6 +119,14 @@ async def add_cache_headers(request, call_next):
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
+
+    return FileResponse(
+        "static/coming_soon.html"
+#        "static/index.html"
+    )
+
+@app.get("/test", response_class=HTMLResponse)
+async def test():
 
     return FileResponse(
         "static/index.html"
@@ -299,7 +307,8 @@ async def get_booths():
         zone_id,
         booth_number,
         latitude,
-        longitude
+        longitude,
+        display_order
      from booth;'''
     rows = await get_data(sql)
     return json_response(rows)

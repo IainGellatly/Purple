@@ -1,4 +1,4 @@
-const APP_VERSION = 173;
+const APP_VERSION = 174;
 
 self.addEventListener("message", event => {
 
@@ -19,7 +19,7 @@ self.addEventListener("message", event => {
 const CACHE_NAME = `fair-cache-v${APP_VERSION}`;
 
 const APP_SHELL = [
-  "/",
+  "/test",
   "/static/app.js",
   "/static/cache.js",
   "/static/styles.css",
@@ -91,7 +91,7 @@ self.addEventListener("fetch", event => {
 
     // Serve cached shell files
     if (
-        url.pathname === "/" ||
+        url.pathname === "/test" ||
         url.pathname === "/static/app.js" ||
         url.pathname === "/static/cache.js" ||
         url.pathname === "/static/styles.css" ||
