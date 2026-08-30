@@ -1451,9 +1451,9 @@ async function addParkingMarkerToMap(
                         alt="Your car">
                 </div>`,
 
-            iconSize: [34, 34],
+            iconSize: [30, 30],
 
-            iconAnchor: [17, 17]
+            iconAnchor: [14, 14]
 
         });
 
@@ -3138,6 +3138,9 @@ async function showMap(options = {}){
   const zoneRecord =
     await CacheManager.getResource("zones");
 
+  const utilityRecord =
+    await CacheManager.getResource("utilities");
+
 
 const vendors =
   vendorRecord?.data || [];
@@ -3147,6 +3150,9 @@ const booths =
 
 const zones =
   zoneRecord?.data || [];
+
+const utilities =
+  utilityRecord?.data || [];
 
 /*
  * The zones resource comes from the server as JSON.
@@ -3328,6 +3334,311 @@ const bounds = imageBounds;
 map.setMaxBounds(
   imageBounds
 );
+
+/*
+ * ------------------------------------------------------------
+ * Fixed festival utility markers.
+ *
+ * Utilities use inline SVG symbols rather than image files.
+ * This keeps the markers small, consistent, and fully offline.
+ * Each utility uses the color supplied by the database.
+ * ------------------------------------------------------------
+ */
+
+const UTILITY_LABELS = {
+  tent: "Tent",
+  first_aid: "First Aid",
+  atm: "ATM",
+  restroom: "Restroom",
+  seating: "Seating",
+  ticket: "Tickets",
+  info: "Information",
+  music: "Music",
+  trash: "Trash",
+  shuttle: "Shuttle"
+};
+
+function utilitySymbol(type){
+
+  const common =
+    'viewBox="0 0 24 24" aria-hidden="true"';
+
+  switch(type){
+
+    case "tent":
+      return `<svg ${common} class="utility-svg">
+        <path d="M3 20L12 4l9 16M6 20h12M8.5 14h7"/>
+      </svg>`;
+
+    case "first_aid":
+      return `<svg ${common} class="utility-svg">
+        <path d="M12 4v16M4 12h16"/>
+      </svg>`;
+
+    case "atm":
+      return `<svg ${common} class="utility-svg">
+        <path d="M12 3v18M16 7.5c-.8-1-2-1.5-3.7-1.5-2 0-3.3 1-3.3 2.5 0 3.8 7 1.7 7 5.5 0 1.5-1.4 2.5-3.6 2.5-1.7 0-3-.5-4-1.5"/>
+      </svg>`;
+
+case "restroom":
+  return `<svg ${common} class="utility-svg utility-wc">
+    <text x="12" y="16" text-anchor="middle">R</text>
+  </svg>`;
+
+    case "seating":
+      return `<svg ${common} class="utility-svg">
+        <path d="M7 5v8M7 13h10M17 9v4M7 13v6M17 13v6M7 5h5a3 3 0 0 1 3 3v1"/>
+      </svg>`;
+
+    case "ticket":
+      return `<svg ${common} class="utility-svg">
+        <path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V7z"/>
+        <path d="M10 7v12"/>
+      </svg>`;
+
+    case "info":
+      return `<svg ${common} class="utility-svg">
+        <circle cx="12" cy="12" r="8"/>
+        <path d="M12 10v6M12 7.5v.5"/>
+      </svg>`;
+
+    case "music":
+      return `<svg ${common} class="utility-svg">
+        <path d="M9 18V6l9-2v12M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3zM18 16a3 3 0 1 1-3-3"/>
+      </svg>`;
+
+    case "trash":
+      return `<svg ${common} class="utility-svg">
+        <path d="M6 7h12l-1 14H7L6 7zM9 7V4h6v3M4 7h16M10 11v6M14 11v6"/>
+      </svg>`;
+
+    case "shuttle":
+      return `<svg ${common} class="utility-svg">
+        <path d="M5 17V8c0-2 1.5-3 3.5-3h7C17.5 5 19 6 19 8v9H5zM5 12h14M8 17v2M16 17v2M8 9h3M14 9h3"/>
+        <circle cx="8" cy="17" r="1.5"/>
+        <circle cx="16" cy="17" r="1.5"/>
+      </svg>`;
+
+    default:
+      return `<svg ${common} class="utility-svg">
+        <circle cx="12" cy="12" r="8"/>
+      </svg>`;
+  }
+}
+
+const utilityMarkerRecords = [];
+
+function utilityRadiusFor(lat, zoom){
+  /*
+   * Utilities intentionally scale more slowly than vendor booths.
+   * At the widest map view they are only slightly larger than
+   * the smallest vendor dots, then grow as the user zooms in.
+   */
+  const vendorRadius = dotRadiusFor(lat, zoom);
+
+  return Math.max(
+    5,
+    Math.min(
+      vendorRadius * 1.5,
+      14
+    )
+  );
+}
+
+function refreshUtilityScaling(){
+
+  const zoom = map.getZoom();
+
+  utilityMarkerRecords.forEach(
+    record => {
+
+      const radius =
+        utilityRadiusFor(
+          record.lat,
+          zoom
+        );
+
+      const size =
+        Math.round(
+          radius * 2
+        );
+
+      record.marker.setIcon(
+        L.divIcon({
+          className: "utility-map-icon",
+
+          html:
+            `<div class="utility-map-dot"
+                  style="background:${record.color}">
+                ${utilitySymbol(record.type)}
+             </div>`,
+
+          iconSize: [
+            size,
+            size
+          ],
+
+          iconAnchor: [
+            radius,
+            radius
+          ]
+        })
+      );
+
+    }
+  );
+}
+
+function addUtilityMarkers(){
+
+  utilities.forEach(
+    utility => {
+
+      const lat =
+        Number(
+          utility.latitude
+        );
+
+      const lon =
+        Number(
+          utility.longitude
+        );
+
+      if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon)
+      ){
+        return;
+      }
+
+      const type =
+        String(
+          utility.utility_type || ""
+        ).toLowerCase();
+
+      const color =
+        utility.color ||
+        "#5c249c";
+
+      utilityMarkerRecords.push({
+        marker: null,
+        lat: lat,
+        lon: lon,
+        type: type,
+        color: color
+      });
+
+    }
+  );
+
+  /*
+   * Create the markers at the current map zoom.
+   */
+  utilityMarkerRecords.forEach(
+    record => {
+
+      const radius =
+        utilityRadiusFor(
+          record.lat,
+          map.getZoom()
+        );
+
+      const size =
+        Math.round(
+          radius * 2
+        );
+
+      const marker =
+        L.marker(
+          [
+            record.lat,
+            record.lon
+          ],
+          {
+            icon:
+              L.divIcon({
+                className:
+                  "utility-map-icon",
+
+                html:
+                  `<div class="utility-map-dot"
+                        style="background:${record.color}">
+                      ${utilitySymbol(record.type)}
+                   </div>`,
+
+                iconSize: [
+                  size,
+                  size
+                ],
+
+                iconAnchor: [
+                  radius,
+                  radius
+                ]
+              }),
+
+            keyboard: false,
+
+            title:
+              utilities.find(
+                u =>
+                  Number(u.latitude) === record.lat &&
+                  Number(u.longitude) === record.lon
+              )?.utility_name ||
+              UTILITY_LABELS[record.type] ||
+              "Festival Utility",
+
+            zIndexOffset: 1500
+          }
+        ).addTo(map);
+
+      record.marker = marker;
+
+      marker.on(
+        "click",
+        function(e){
+
+          L.DomEvent.stop(e);
+
+          const utility =
+            utilities.find(
+              u =>
+                Number(u.latitude) === record.lat &&
+                Number(u.longitude) === record.lon
+            );
+
+          marker.bindPopup(
+            `<div class="utility-popup">
+               <div class="utility-popup-title">
+                 ${escapeHtml(
+                   utility?.utility_name ||
+                   UTILITY_LABELS[record.type] ||
+                   "Festival Utility"
+                 )}
+               </div>
+             </div>`,
+            {
+              className:
+                "utility-popup-container",
+
+              maxWidth: 220,
+
+              closeButton: true
+            }
+          ).openPopup();
+
+        }
+      );
+
+    }
+  );
+
+}
+
+/*
+ * Draw all fixed utility locations on the map.
+ * They remain visible regardless of which vendor zone is active.
+ */
 
 let mapFitZoom = 0;
 
@@ -3994,6 +4305,8 @@ gpsWatchId =
     );
 
   }
+
+ addUtilityMarkers();
 
 
   function cleanBoothNumber(value){
@@ -5080,12 +5393,13 @@ const polygon =
     }
   );
 
-
-  map.on(
-    "zoomend",
-    refreshVendorScaling
-  );
-
+map.on(
+  "zoomend",
+  () => {
+    refreshVendorScaling();
+    refreshUtilityScaling();
+  }
+);
 
   /*
    * ------------------------------------------------------------
@@ -5299,8 +5613,8 @@ if (page === "vote"){
   return;
 }
 
-// --------------- VOTE ----------------
-if (page === "explore"){
+// --------------- ARTIST ----------------
+if (page === "artist"){
   loadExplore();
   return;
 }
