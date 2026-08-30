@@ -4395,12 +4395,13 @@ const polygon =
                     className: "booth-number-label",
                     html:
                       `<span>${escapeHtml(boothNumber)}</span>`,
-                    iconSize: [radius * 2, radius * 2],
-                    iconAnchor: [radius, radius]
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                   }),
                   interactive: false,
                   keyboard: false,
-                  zIndexOffset: 1
+                  // Keep booth numbers above every booth dot.
+                  zIndexOffset: 10000
                 }
               )
             : null;
@@ -4417,6 +4418,8 @@ const polygon =
           dot: dot,
 
           numberLabel: numberLabel,
+
+          numberSpan: null,
 
           radius: radius,
 
@@ -4657,6 +4660,14 @@ const polygon =
                 layerRecord.numberLabel.addTo(
                   map
                 );
+
+                const numberElement =
+                  layerRecord.numberLabel.getElement();
+
+                layerRecord.numberSpan =
+                  numberElement
+                    ? numberElement.querySelector("span")
+                    : null;
               }
 
             }
@@ -4731,6 +4742,9 @@ const polygon =
           );
 
         }
+
+        layerRecord.numberSpan =
+          null;
 
 
         if (
@@ -4849,17 +4863,10 @@ const polygon =
               radius
             );
 
-            if (layerRecord.numberLabel) {
-              layerRecord.numberLabel.setIcon(
-                L.divIcon({
-                  className: "booth-number-label",
-                  html:
-                    `<span>${escapeHtml(
-                      String(layerRecord.booth.display_order).trim()
-                    )}</span>`,
-                  iconSize: [radius * 2, radius * 2],
-                  iconAnchor: [radius, radius]
-                })
+            if (layerRecord.numberSpan) {
+              layerRecord.numberSpan.style.setProperty(
+                "--booth-number-scale",
+                String(radius / 18)
               );
             }
 
