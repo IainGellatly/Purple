@@ -160,6 +160,12 @@ const TEST_GPS_LON = -77.257733;
 
 const TEST_GPS_ACCURACY_FEET = 20;
 
+// Parking spot GPS quality control.
+// The spot will not be saved until GPS reports an accuracy
+// of 50 feet or better.  It will wait up to 20 seconds.
+const PARKING_ACCURACY_THRESHOLD_FEET = 50;
+const PARKING_GPS_TIMEOUT_MS = 20000;
+
 
 let subscriptionId = 0;
 let pushAuthorized = false;
@@ -904,6 +910,126 @@ function getCurrentPosition() {
 }
 
 
+function getAccurateParkingPosition() {
+
+    if (TEST_GPS_ENABLED){
+        return Promise.resolve({
+            coords: {
+                latitude: TEST_GPS_LAT,
+                longitude: TEST_GPS_LON,
+                accuracy:
+                    TEST_GPS_ACCURACY_FEET / 3.28084
+            }
+        });
+    }
+
+    return new Promise((resolve, reject) => {
+
+        if (!("geolocation" in navigator)) {
+            reject(
+                new Error("Geolocation is not available.")
+            );
+            return;
+        }
+
+        let watchId = null;
+        let timeoutId = null;
+        let bestAccuracyFeet = Infinity;
+
+        const cleanup = () => {
+            if (watchId !== null){
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            if (timeoutId !== null){
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+        };
+
+        const finish = (callback, value) => {
+            cleanup();
+            callback(value);
+        };
+
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+
+                const accuracyMeters =
+                    position.coords.accuracy || Infinity;
+
+                const accuracyFeet =
+                    accuracyMeters * 3.28084;
+
+                bestAccuracyFeet =
+                    Math.min(
+                        bestAccuracyFeet,
+                        accuracyFeet
+                    );
+
+                const button =
+                    document.getElementById(
+                        "parking-mark-button"
+                    );
+
+                const status =
+                    document.getElementById(
+                        "parking-status"
+                    );
+
+                if (status){
+                    status.textContent =
+                        `GPS accuracy: ±${Math.round(accuracyFeet)} feet`;
+                }
+
+                if (
+                    button &&
+                    accuracyFeet <=
+                        PARKING_ACCURACY_THRESHOLD_FEET
+                ){
+                    button.textContent =
+                        "Location Found!";
+                }
+
+                if (
+                    accuracyFeet <=
+                    PARKING_ACCURACY_THRESHOLD_FEET
+                ){
+                    finish(resolve, position);
+                }
+
+            },
+            (error) => {
+                finish(reject, error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 10000
+            }
+        );
+
+        timeoutId = setTimeout(() => {
+
+            const error = new Error(
+                "GPS accuracy did not improve enough."
+            );
+
+            error.code = 3;
+            error.bestAccuracyFeet =
+                Number.isFinite(bestAccuracyFeet)
+                    ? Math.round(bestAccuracyFeet)
+                    : null;
+
+            finish(reject, error);
+
+        }, PARKING_GPS_TIMEOUT_MS);
+
+    });
+}
+
+
 async function markParkingSpot() {
 
     const button =
@@ -911,17 +1037,26 @@ async function markParkingSpot() {
             "parking-mark-button"
         );
 
+    const status =
+        document.getElementById(
+            "parking-status"
+        );
+
     if (button) {
         button.disabled = true;
+        button.classList.add("gps-locating");
         button.textContent = "Finding Your Location...";
     }
 
+    if (status){
+        status.textContent =
+            "Waiting for a more accurate GPS location...";
+    }
 
     try {
 
         const position =
-            await getCurrentPosition();
-
+            await getAccurateParkingPosition();
 
         const latitude =
             position.coords.latitude;
@@ -937,35 +1072,28 @@ async function markParkingSpot() {
                 accuracyMeters * 3.28084
             );
 
-
         const existingSpot =
             await getParkingSpot();
 
-
         let message;
-
 
         if (existingSpot) {
 
             message =
-                `Replace your saved parking spot with your current location?\n\n` +
-                `GPS accuracy is approximately ±${accuracyFeet} feet.`;
+                `Replace your saved parking spot with your current location? ` +
+                `GPS accuracy is approx ±${accuracyFeet} feet.`;
 
         } else {
 
             message =
-                `Save this as your parking spot?\n\n` +
-                `GPS accuracy is approximately ±${accuracyFeet} feet.`;
+                `Save this as your parking spot? ` +
+                `GPS accuracy is approx ±${accuracyFeet} feet.`;
 
         }
-
 
         if (!confirm(message)) {
-
             return;
-
         }
-
 
         await CacheManager.setMetadata(
 
@@ -980,7 +1108,6 @@ async function markParkingSpot() {
 
         );
 
-
         if (button) {
 
             button.textContent =
@@ -988,19 +1115,12 @@ async function markParkingSpot() {
 
         }
 
-
-        const status =
-            document.getElementById(
-                "parking-status"
-            );
-
         if (status) {
 
             status.textContent =
                 "Your car is saved on the festival map.";
 
         }
-
 
         setTimeout(() => {
 
@@ -1011,7 +1131,6 @@ async function markParkingSpot() {
 
         }, 1800);
 
-
     } catch (err) {
 
         console.error(
@@ -1019,11 +1138,10 @@ async function markParkingSpot() {
             err
         );
 
-
         if (err.code === 1) {
 
             alert(
-                "Location access was not allowed.\n\n" +
+                "Location access was not allowed.\\n\\n" +
                 "Please allow location access for the Purple App " +
                 "and try again."
             );
@@ -1031,21 +1149,27 @@ async function markParkingSpot() {
         } else if (err.code === 2) {
 
             alert(
-                "Your location could not be determined.\n\n" +
+                "Your location could not be determined.\\n\\n" +
                 "Please try again in a moment."
             );
 
         } else if (err.code === 3) {
 
+            const best =
+                Number.isFinite(err.bestAccuracyFeet)
+                    ? `\\n\\nBest accuracy reached was approximately ±${err.bestAccuracyFeet} feet.`
+                    : "";
+
             alert(
-                "Finding your location took too long.\n\n" +
-                "Please try again."
+                "We could not get a sufficiently accurate GPS location.\\n\\n" +
+                `Please try again. The location needs to be within ±${PARKING_ACCURACY_THRESHOLD_FEET} feet.` +
+                best
             );
 
         } else {
 
             alert(
-                "Unable to determine your location.\n\n" +
+                "Unable to determine your location.\\n\\n" +
                 "Please try again."
             );
 
@@ -1056,23 +1180,30 @@ async function markParkingSpot() {
         if (button) {
 
             button.disabled = false;
+            button.classList.remove("gps-locating");
 
             if (
                 button.textContent ===
-                "Finding Your Location..."
+                "Finding Your Location..." ||
+                button.textContent ===
+                "Location Found!"
             ) {
-
                 button.textContent =
                     "Mark My Parking Spot";
-
             }
 
+        }
+
+        if (
+            status &&
+            !await getParkingSpot()
+        ){
+            status.textContent = "";
         }
 
     }
 
 }
-
 
 function parkingDistanceMeters(
     lat1,
@@ -1316,7 +1447,7 @@ async function addParkingMarkerToMap(
             html:
                 `<div class="parking-map-dot">
                     <img
-                        src="/static/logo/van.webp"
+                        src="/static/icons/van.webp"
                         alt="Your car">
                 </div>`,
 

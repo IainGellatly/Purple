@@ -15,6 +15,7 @@ const CACHED_RESOURCES = [
   "categories",
   "booths",
   "zones",
+  "utilities",
   "events",
   "sponsors",
   "media"
@@ -728,6 +729,7 @@ if (
   resource.resource === "vendors" ||
   resource.resource === "booths" ||
   resource.resource === "zones" ||
+  resource.resource ==  "utilities" ||
   resource.resource === "categories"
 ) {
 

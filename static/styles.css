@@ -2343,6 +2343,18 @@ button:active {
 }
 
 
+/* GPS locating state for Mark My Parking Spot */
+#parking-mark-button.gps-locating {
+    background: #01b19d;
+    color: white;
+}
+
+#parking-mark-button.gps-locating:disabled {
+    background: #01b19d;
+    color: white;
+    opacity: 1;
+}
+
 /* =========================================================
    PARKING PAGE BUTTON / STATUS
    ========================================================= */

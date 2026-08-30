@@ -319,6 +319,12 @@ async def get_zones():
     rows = await get_data(sql)
     return json_response(rows)
 
+@app.get('/api/utilities')
+async def get_utilities():
+    sql = 'select * from utility;'
+    rows = await get_data(sql)
+    return json_response(rows)
+
 @app.get('/api/candidates/{can_type}')
 async def get_candidates(can_type: str):
 
