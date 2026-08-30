@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#15161a" />
+<title>Vendor Map</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root{
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden;
+    background-color: #efe4fb;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+  #app {
+    position: relative;
+    align-items: center;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    height: 100dvh;
+  }
+
+.title-image {
+    width: 80%;
+    max-width: 500px;
+    height: auto;
+    object-fit: contain;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+  #map-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    flex: 0 0 auto;
+  }
+  #map {
+    position: absolute; inset: 0;
+    background: #0d0e11;
+    display: block;
+  }
+
+  /* Zone button marker */
+  .zone-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1;
+  }
+
+  /* Vendor name label shown at higher zoom */
+  .vendor-label {
+    background: rgba(15,16,20,0.82);
+    color: #fff;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    max-width: 110px;
+    width: max-content;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .vendor-label::before { display: none; }
+
+  /* Compact vendor popup */
+  .leaflet-popup.vendor-popup .leaflet-popup-content-wrapper {
+    border-radius: 10px;
+    padding: 0;
+    background: #1d1e24;
+    color: #f4f1ea;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .leaflet-popup.vendor-popup .leaflet-popup-content {
+    margin: 0;
+    width: 210px !important;
+  }
+  .leaflet-popup.vendor-popup .leaflet-popup-tip {
+    background: #1d1e24;
+  }
+  .vendor-popup-inner { padding: 10px 12px 12px; }
+  .vendor-popup-name { font-size: 14px; font-weight: 700; margin: 0 0 3px; padding-right: 14px; }
+  .vendor-popup-booth {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+    color: #15161a;
+  }
+  .vendor-popup-desc { font-size: 12.5px; line-height: 1.35; color: #cfcfd6; margin: 0; }
+  .leaflet-popup.vendor-popup .leaflet-popup-close-button {
+    color: #cfcfd6 !important;
+    font-size: 18px !important;
+    padding: 4px 6px 0 0 !important;
+  }
+  .leaflet-popup.vendor-popup .leaflet-popup-close-button:hover { color: #fff !important; }
+
+  .leaflet-container { background: #0d0e11; }
+  .leaflet-control-zoom a {
+    color: #15161a !important;
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+      <img
+        src="/static/images/map_title.png"
+        alt="Map Title"
+        class="title-image">
+
+    <div id="map-wrap">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <script src="/static/map_zone_vendor_booth.js"></script>
+  <script src="/static/favorites_db.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    // ---------- helpers ----------
+
+    function textColorFor(hexColor) {
+      var c = hexColor.replace('#', '');
+      if (c.length === 3) c = c.split('').map(function (ch) { return ch + ch; }).join('');
+      var r = parseInt(c.substr(0, 2), 16) / 255;
+      var g = parseInt(c.substr(2, 2), 16) / 255;
+      var b = parseInt(c.substr(4, 2), 16) / 255;
+      var lum = 0.2126 * r + 0.2646 * g + 0.0722 * b; // perceived luminance approx
+      // more accurate perceived luminance weighting
+      lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return lum > 0.6 ? '#15161a' : '#ffffff';
+    }
+
+    function polygonCentroid(vertices) {
+      // vertices: array of [lat, lng], first/last may repeat - dedupe closing point
+      var pts = vertices.slice();
+      if (pts.length > 1) {
+        var first = pts[0], last = pts[pts.length - 1];
+        if (first[0] === last[0] && first[1] === last[1]) pts.pop();
+      }
+      var latSum = 0, lngSum = 0;
+      for (var i = 0; i < pts.length; i++) { latSum += pts[i][0]; lngSum += pts[i][1]; }
+      return [latSum / pts.length, lngSum / pts.length];
+    }
+
+    // meters-per-pixel at a given latitude/zoom for Leaflet's default Web Mercator (EPSG:3857)
+    function metersPerPixel(lat, zoom) {
+      return 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+    }
+
+    var BOOTH_FEET = 10;
+    var BOOTH_METERS = BOOTH_FEET * 0.3048;
+    var DOT_DIAMETER_SCALE = 0.9; // 10% smaller than the true booth footprint, to reduce overlap
+    var MIN_DOT_RADIUS = 4;
+    var MAX_DOT_RADIUS = 60;
+    var HIT_PADDING_PX = 10;
+    var MIN_HIT_RADIUS = 16;
+    var LABEL_MIN_ZOOM_OFFSET = 2.5; // show names once zoomed in this many levels past the fitted "whole map" zoom
+
+    function dotRadiusFor(lat, zoom) {
+      var mpp = metersPerPixel(lat, zoom);
+      var r = (BOOTH_METERS * DOT_DIAMETER_SCALE / 2) / mpp;
+      return Math.max(MIN_DOT_RADIUS, Math.min(r, MAX_DOT_RADIUS));
+    }
+
+    function cleanBoothNumber(s) {
+      return (s || '').toString().trim().replace(/,\s*$/, '');
+    }
+
+    // ---------- map setup ----------
+
+    var imageBounds = L.latLngBounds(festivalMap.bounds);
+
+    var map = L.map('map', {
+      crs: L.CRS.EPSG3857,
+      renderer: L.svg({padding: 3.0}),   // offscreen draw & svg/canvas renderer
+      zoomControl: false,
+      zoomAnimation: false,    // disabled zoom animation
+      attributionControl: false,
+      minZoom: 0,
+      maxZoom: 23,
+      maxBoundsViscosity: 1.0,
+      tap: true,
+      zoomSnap: 0.25,
+      zoomDelta: 0.75
+    });
+    L.imageOverlay(festivalMap.image, imageBounds, {
+      interactive: false
+    }).addTo(map);
+
+    // Computes the exact zoom level at which the image's width fills the
+    // screen exactly (no left/right cropping). Since the image is square
+    // and the screen is taller than it is wide, width is the binding
+    // dimension - height will letterbox (show as background color above/
+    // below the image) rather than crop, which is the trade-off being
+    // made here on purpose.
+    function computeWholeMapZoom() {
+      // Read the container's real, current size directly from the DOM
+      // instead of going through Leaflet's own getBoundsZoom/getSize(),
+      // which cache internally and can go stale relative to the actual
+      // page layout. getBoundingClientRect() always reflects reality.
+      var rect = document.getElementById('map-wrap').getBoundingClientRect();
+
+      // Project the image's corners to pixel coordinates at a fixed
+      // reference zoom (0), then measure the resulting pixel size. This is
+      // the same primitive getBoundsZoom uses internally, called directly
+      // so nothing is hidden inside it.
+      var refZoom = 0;
+      var nwPx = map.project(imageBounds.getNorthWest(), refZoom);
+      var sePx = map.project(imageBounds.getSouthEast(), refZoom);
+      var boundsWidthPx = Math.abs(sePx.x - nwPx.x);
+      var boundsHeightPx = Math.abs(sePx.y - nwPx.y);
+
+      // How many times bigger the container is than the image, per
+      // dimension, at that reference zoom.
+      var scaleX = rect.width / boundsWidthPx;
+      var scaleY = rect.height / boundsHeightPx;
+
+      // Use the LARGER of the two: guarantees the image fills the
+      // container completely on every edge (no border), at the cost of a
+      // small crop on whichever dimension has slightly more image than
+      // the container needs. The image's real geographic bounds aren't
+      // perfectly square (~5% taller than wide), so a small crop on one
+      // axis is unavoidable if the border is not acceptable - and it isn't.
+      var scale = Math.max(scaleX, scaleY);
+
+      return map.getScaleZoom(scale, refZoom);
+    }
+
+    var fittedZoom;
+    var userHasZoomedOrPanned = false;
+    map.on('zoomstart dragstart', function () { userHasZoomedOrPanned = true; });
+
+    function fitWholeMap() {
+      fittedZoom = computeWholeMapZoom();
+      map.setMinZoom(fittedZoom);
+      // _resetView (not setView) applies center/zoom directly, without
+      // setView's own snap-then-clamp pass - which would otherwise round
+      // our exact fittedZoom to the nearest zoomSnap grid step, landing
+      // slightly off the true edge-to-edge fit in either direction.
+      map._resetView(imageBounds.getCenter(), fittedZoom);
+    }
+
+    function resyncToContainerSize() {
+      map.invalidateSize({ animate: false });
+      if (!userHasZoomedOrPanned) fitWholeMap();
+      else map.setMinZoom(computeWholeMapZoom());
+    }
+
+    // Immediate pass so there's no blank flash on load...
+    fitWholeMap();
+
+    // ...then keep it correct any time the map's actual container box
+    // changes size, for ANY reason - not just viewport/rotation changes
+    // (which is all window's 'resize' event covers), but also internal
+    // layout shifts such as the title image finishing loading and pushing
+    // #map-wrap shorter after our first measurement. ResizeObserver fires
+    // on the real, current size of the element itself, so it catches that
+    // case reliably instead of guessing which events might cause it.
+    if ('ResizeObserver' in window) {
+      var mapWrapEl = document.getElementById('map-wrap');
+      var mapResizeObserver = new ResizeObserver(function () {
+        resyncToContainerSize();
+      });
+      mapResizeObserver.observe(mapWrapEl);
+    } else {
+      window.addEventListener('resize', resyncToContainerSize);
+    }
+
+    // No padding: there is nothing beyond the image edge to show, so the
+    // map should never be able to pan or settle somewhere that reveals
+    // blank space past it. Any padding here creates slack that a
+    // pinch-zoom release can drift into off-center, cropping the opposite
+    // edge of the actual image.
+    map.setMaxBounds(imageBounds);
+
+    var baseZoomForLabels = fittedZoom + LABEL_MIN_ZOOM_OFFSET;
+
+    // ---------- favorites ----------
+
+    // Populated from IndexedDB (see favorites_db.js) before zones are built.
+    // buildVendorLayers() reads this too, well after it's populated, since
+    // that only runs once the user taps a zone.
+    var favoriteVendorIds = new Set();
+
+    function computeFavoriteCountsByZone() {
+      var counts = {};
+      vendors.forEach(function (v) {
+        if (favoriteVendorIds.has(v.vendor_id)) {
+          counts[v.zone_id] = (counts[v.zone_id] || 0) + 1;
+        }
+      });
+      return counts;
+    }
+
+    function zoneButtonHtml(zone, favoriteCount) {
+      var label = escapeHtml(zone.zone_name);
+      if (favoriteCount > 0) {
+        label += ' (' + favoriteCount + ')';
+      }
+      return '<div class="zone-btn" style="background:' + zone.zone_color + ';color:' + textColorFor(zone.zone_color) + ';">' +
+        label + '</div>';
+    }
+
+    // ---------- zones ----------
+
+    var zoneState = {}; // zone_id -> { zone, centroid, button, polygon, vendorLayers: [], active: bool }
+
+    function buildZones(favoriteCountsByZone) {
+      zones.forEach(function (zone) {
+        // Some zones (e.g. parking areas) have no drawable geometry.
+        if (!Array.isArray(zone.vertices) || zone.vertices.length < 3) {
+          return;
+        }
+
+        var centroid = polygonCentroid(zone.vertices);
+
+        var polygon = L.polygon(zone.vertices, {
+          color: zone.zone_color,
+          weight: 2,
+          opacity: 0.95,
+          fill: true,
+          fillColor: zone.zone_color,
+          fillOpacity: 0.06,
+          interactive: true,
+          bubblingMouseEvents: false
+        }).addTo(map);
+
+        var buttonIcon = L.divIcon({
+          className: 'zone-btn-wrap',
+          html: zoneButtonHtml(zone, favoriteCountsByZone[zone.zone_id] || 0),
+          iconSize: [0, 0],
+          iconAnchor: [0, 0]
+        });
+
+        var button = L.marker(centroid, {
+          icon: buttonIcon,
+          interactive: true,
+          keyboard: false,
+          zIndexOffset: 500
+        }).addTo(map);
+
+        var state = {
+          zone: zone,
+          centroid: centroid,
+          button: button,
+          polygon: polygon,
+          vendorLayers: [],
+          active: false
+        };
+        zoneState[zone.zone_id] = state;
+
+        function onActivate(e) {
+          if (e) L.DomEvent.stop(e);
+          map.closePopup();
+          activateZone(zone.zone_id);
+        }
+
+        polygon.on('click', onActivate);
+        button.on('click', onActivate);
+      });
+    }
+
+    // ---------- vendors & booths ----------
+    // `vendors` holds name/description/etc but no coordinates.
+    // `booths` holds coordinates and can have more than one entry per
+    // vendor_id (a vendor with multiple booth locations).
+
+    var vendorById = {};
+    vendors.forEach(function (v) {
+      vendorById[v.vendor_id] = v;
+    });
+
+    var boothsByZone = {};
+    booths.forEach(function (b) {
+      if (!boothsByZone[b.zone_id]) boothsByZone[b.zone_id] = [];
+      boothsByZone[b.zone_id].push(b);
+    });
+
+    function buildVendorLayers(zoneId) {
+      var state = zoneState[zoneId];
+      if (!state || state.vendorLayers.length) return; // already built
+      var list = boothsByZone[zoneId] || [];
+      var color = state.zone.zone_color;
+
+      list.forEach(function (b) {
+        var vendor = vendorById[b.vendor_id];
+        if (!vendor) return; // booth record with no matching vendor entry
+
+        var latlng = L.latLng(b.latitude, b.longitude);
+        var radius = dotRadiusFor(b.latitude, map.getZoom());
+
+        // larger, invisible hit target underneath so small dots are easy to tap
+        var hit = L.circleMarker(latlng, {
+          radius: Math.max(radius + HIT_PADDING_PX, MIN_HIT_RADIUS),
+          stroke: false,
+          fill: true,
+          fillOpacity: 0.001,
+          interactive: true,
+          bubblingMouseEvents: false,
+          pane: 'markerPane'
+        });
+
+        // the actual visible dot, purely decorative (clicks pass through to `hit`)
+        var isFavorite = favoriteVendorIds.has(vendor.vendor_id);
+        var dot = L.circleMarker(latlng, {
+          radius: radius,
+          color: isFavorite ? '#ffffff' : '#111214',
+          weight: isFavorite ? 3.75 : 1.5,
+          opacity: 1,
+          fill: true,
+          fillColor: color,
+          fillOpacity: 0.95,
+          interactive: false,
+          pane: 'markerPane'
+        });
+
+        var layerRecord = { vendor: vendor, booth: b, hit: hit, dot: dot, radius: radius, labelOn: false };
+
+        hit.on('click', function (e) {
+          L.DomEvent.stop(e);
+          openVendorPopup(layerRecord);
+        });
+
+        state.vendorLayers.push(layerRecord);
+      });
+    }
+
+    function openVendorPopup(layerRecord) {
+      var vendor = layerRecord.vendor;
+      var booth = layerRecord.booth;
+      var state = zoneState[booth.zone_id];
+      var color = state.zone.zone_color;
+      var textColor = textColorFor(color);
+      var boothNumber = cleanBoothNumber(booth.booth_number);
+
+      var html =
+        '<div class="vendor-popup-inner">' +
+          '<div class="vendor-popup-name">' + escapeHtml(vendor.vendor_name) + '</div>' +
+          (boothNumber ? '<div class="vendor-popup-booth" style="background:' + color + ';color:' + textColor + ';">' +
+            escapeHtml(boothNumber) + '</div>' : '') +
+          '<p class="vendor-popup-desc">' + escapeHtml(vendor.description || '') + '</p>' +
+        '</div>';
+
+      L.popup({
+        className: 'vendor-popup',
+        closeButton: true,
+        autoClose: true,
+        closeOnClick: false,
+        maxWidth: 240,
+        minWidth: 210,
+        offset: [0, -(layerRecord.radius + 6)]
+      })
+        .setLatLng(L.latLng(booth.latitude, booth.longitude))
+        .setContent(html)
+        .openOn(map);
+    }
+
+    function activateZone(zoneId) {
+      Object.keys(zoneState).forEach(function (id) {
+        var state = zoneState[id];
+        if (Number(id) === Number(zoneId)) {
+          if (state.active) return;
+          buildVendorLayers(state.zone.zone_id);
+          map.removeLayer(state.button);
+          state.vendorLayers.forEach(function (lr) {
+            lr.hit.addTo(map);
+            lr.dot.addTo(map);
+          });
+          state.active = true;
+        } else if (state.active) {
+          deactivateZoneState(state);
+        }
+      });
+      refreshVendorScaling();
+    }
+
+    function deactivateZoneState(state) {
+      state.vendorLayers.forEach(function (lr) {
+        if (map.hasLayer(lr.hit)) map.removeLayer(lr.hit);
+        if (map.hasLayer(lr.dot)) map.removeLayer(lr.dot);
+        if (lr.labelOn) { lr.dot.unbindTooltip(); lr.labelOn = false; }
+      });
+      if (!map.hasLayer(state.button)) state.button.addTo(map);
+      state.active = false;
+    }
+
+    function deactivateAllZones() {
+      Object.keys(zoneState).forEach(function (id) {
+        var state = zoneState[id];
+        if (state.active) deactivateZoneState(state);
+      });
+    }
+
+    function refreshVendorScaling() {
+      var zoom = map.getZoom();
+      var showLabels = zoom >= baseZoomForLabels;
+      Object.keys(zoneState).forEach(function (id) {
+        var state = zoneState[id];
+        if (!state.active) return;
+        state.vendorLayers.forEach(function (lr) {
+          var r = dotRadiusFor(lr.booth.latitude, zoom);
+          lr.radius = r;
+          lr.dot.setRadius(r);
+          lr.hit.setRadius(Math.max(r + HIT_PADDING_PX, MIN_HIT_RADIUS));
+
+          if (showLabels && !lr.labelOn) {
+            lr.dot.bindTooltip(escapeHtml(lr.vendor.vendor_name), {
+              permanent: true,
+              direction: 'center',
+              className: 'vendor-label'
+            }).openTooltip();
+            lr.labelOn = true;
+          } else if (!showLabels && lr.labelOn) {
+            lr.dot.unbindTooltip();
+            lr.labelOn = false;
+          }
+        });
+      });
+    }
+
+    // Tapping blank map area (not on a zone/button/vendor) returns to the zone-button view.
+    map.on('click', function () {
+      map.closePopup();
+      deactivateAllZones();
+    });
+
+    map.on('zoomend', refreshVendorScaling);
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Load favorites (see favorites_db.js) before drawing zones, so button
+    // labels get their "(N)" count immediately. If it fails for any reason
+    // (e.g. IndexedDB unavailable), fall back to zones with no counts/highlights
+    // rather than blocking the map from ever appearing.
+    loadFavoriteIdsFromDB()
+      .then(function (ids) {
+        favoriteVendorIds = new Set(ids);
+      })
+      .catch(function (err) {
+        console.error('Could not load favorites for the zone map:', err);
+        favoriteVendorIds = new Set();
+      })
+      .then(function () {
+        buildZones(computeFavoriteCountsByZone());
+      });
+  })();
+  </script>
+</body>
+</html>

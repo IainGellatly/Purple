@@ -1314,7 +1314,11 @@ async function addParkingMarkerToMap(
                 "parking-map-icon",
 
             html:
-                `<div class="parking-map-dot">🚗</div>`,
+                `<div class="parking-map-dot">
+                    <img
+                        src="/static/logo/van.webp"
+                        alt="Your car">
+                </div>`,
 
             iconSize: [34, 34],
 
@@ -3115,8 +3119,8 @@ zones.forEach(zone => {
 const MAP_BOUNDS = {
   north: 43.042796,
   south: 43.039288,
-  west: -77.259872,
-  east: -77.252045
+  west: -77.259882,
+  east: -77.252055
 };
 
 const imageBounds =
@@ -3149,15 +3153,17 @@ const map =
     L.circleMarker(
       [0, 0],
       {
-        radius: 12,
+        radius: 10,
 
         color: "#ffffff",
 
         weight: 2,
 
+        opacity: 0.5,
+
         fillColor: "#ff0000",
 
-        fillOpacity: 1
+        fillOpacity: 0.5
       }
     );
 
@@ -3430,15 +3436,16 @@ function fitWholeMap(){
 
   function getGpsRadius(accuracyFt){
 
-    if (accuracyFt < 20) return 12;
+    // Purple map GPS dot is intentionally smaller than the Fair map.
+    if (accuracyFt < 20) return 10;
 
-    if (accuracyFt < 50) return 18;
+    if (accuracyFt < 50) return 15;
 
-    if (accuracyFt < 100) return 24;
+    if (accuracyFt < 100) return 20;
 
-    if (accuracyFt < 150) return 30;
+    if (accuracyFt < 150) return 25;
 
-    return 36;
+    return 30;
 
   }
 
@@ -4368,6 +4375,37 @@ const polygon =
           );
 
 
+        /*
+         * Booth number displayed directly in the center of the dot.
+         * Uses display_order from the booth data (0-99).
+         */
+        const boothNumber =
+          booth.display_order !== null &&
+          booth.display_order !== undefined &&
+          String(booth.display_order).trim() !== ""
+            ? String(booth.display_order).trim()
+            : "";
+
+        const numberLabel =
+          boothNumber
+            ? L.marker(
+                latlng,
+                {
+                  icon: L.divIcon({
+                    className: "booth-number-label",
+                    html:
+                      `<span>${escapeHtml(boothNumber)}</span>`,
+                    iconSize: [radius * 2, radius * 2],
+                    iconAnchor: [radius, radius]
+                  }),
+                  interactive: false,
+                  keyboard: false,
+                  zIndexOffset: 1
+                }
+              )
+            : null;
+
+
         const layerRecord = {
 
           vendor: vendor,
@@ -4377,6 +4415,8 @@ const polygon =
           hit: hit,
 
           dot: dot,
+
+          numberLabel: numberLabel,
 
           radius: radius,
 
@@ -4613,6 +4653,12 @@ const polygon =
                 map
               );
 
+              if (layerRecord.numberLabel) {
+                layerRecord.numberLabel.addTo(
+                  map
+                );
+              }
+
             }
           );
 
@@ -4668,6 +4714,20 @@ const polygon =
 
           map.removeLayer(
             layerRecord.dot
+          );
+
+        }
+
+
+        if (
+          layerRecord.numberLabel &&
+          map.hasLayer(
+            layerRecord.numberLabel
+          )
+        ){
+
+          map.removeLayer(
+            layerRecord.numberLabel
           );
 
         }
@@ -4788,6 +4848,20 @@ const polygon =
             layerRecord.dot.setRadius(
               radius
             );
+
+            if (layerRecord.numberLabel) {
+              layerRecord.numberLabel.setIcon(
+                L.divIcon({
+                  className: "booth-number-label",
+                  html:
+                    `<span>${escapeHtml(
+                      String(layerRecord.booth.display_order).trim()
+                    )}</span>`,
+                  iconSize: [radius * 2, radius * 2],
+                  iconAnchor: [radius, radius]
+                })
+              );
+            }
 
 
             layerRecord.hit.setRadius(

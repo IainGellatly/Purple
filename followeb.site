@@ -1,0 +1,189 @@
+# -----------------------------
+# HTTP → HTTPS REDIRECT FOLLOWEB
+# -----------------------------
+    server {
+        if ($host = www.followeb.site) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        if ($host = followeb.site) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        listen 80;
+        server_name followeb.site www.followeb.site;
+
+        return 301 https://$host$request_uri;
+    }
+
+# -----------------------------
+# HTTP → HTTPS REDIRECT ENJOYTHEFAIR
+# -----------------------------
+    server {
+        if ($host = www.enjoythefair.com) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        if ($host = enjoythefair.com) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        listen 80;
+        server_name enjoythefair.com www.enjoythefair.com;
+
+        return 301 https://$host$request_uri;
+    }
+
+# -----------------------------
+# HTTP → HTTPS REDIRECT LOVETHEPURPLE
+# -----------------------------
+    server {
+        if ($host = www.lovethepurple.com) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        if ($host = lovethepurple.com) {
+            return 301 https://$host$request_uri;
+        } # managed by Certbot
+
+        listen 80;
+        server_name lovethepurple.com www.lovethepurple.com;
+
+        return 301 https://$host$request_uri;
+    }
+
+# -----------------------------
+# HTTPS ENJOYTHEFAIR SERVER
+# -----------------------------
+    server {
+        listen 443 ssl http2;
+        server_name enjoythefair.com www.enjoythefair.com;
+
+        # ✅ ADD THESE LINES HERE
+        keepalive_timeout 65;
+        keepalive_requests 1000;
+
+        # SSL (from Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/followeb.site/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/followeb.site/privkey.pem; # managed by Certbot
+
+        # Recommended SSL settings
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        location = /static/media/media.zip {
+            alias /home/admin/fair/static/media/media.zip;
+
+            access_log /var/log/nginx/mediazip.log;
+
+            expires 30d;
+            add_header Cache-Control "public, max-age=2592000, immutable";
+        }
+
+        location /static/ {
+            alias /home/admin/fair/static/;
+            access_log off;
+            expires 30d;
+            add_header Cache-Control "public, max-age=2592000, immutable";
+        }
+
+        # -----------------------------
+        # Reverse proxy to FastAPI
+        # -----------------------------
+        location / {
+            proxy_pass http://127.0.0.1:8001;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+        }
+    
+
+}
+
+# -----------------------------
+# HTTPS LOVETHEPURPLE SERVER
+# -----------------------------
+    server {
+        listen 443 ssl http2;
+        server_name lovethepurple.com www.lovethepurple.com;
+
+        # ✅ ADD THESE LINES HERE
+        keepalive_timeout 65;
+        keepalive_requests 1000;
+
+        # SSL (from Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/followeb.site/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/followeb.site/privkey.pem; # managed by Certbot
+
+        # Recommended SSL settings
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        location /static/ {
+            alias /home/admin/purple/static/;
+            access_log off;
+            expires 30d;
+            add_header Cache-Control "public, max-age=2592000, immutable";
+        }
+
+        # -----------------------------
+        # Reverse proxy to FastAPI
+        # -----------------------------
+        location / {
+            proxy_pass http://127.0.0.1:8003;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+        }
+    
+
+}
+
+# -----------------------------
+# HTTPS AND WS FOLLOWEB SERVER
+# -----------------------------
+    server {
+        listen 443 ssl http2;
+        server_name followeb.site www.followeb.site;
+
+        keepalive_timeout 65;
+        keepalive_requests 1000;
+
+        # SSL (from Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/followeb.site/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/followeb.site/privkey.pem; # managed by Certbot
+
+        # Recommended SSL settings
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        # -----------------------------
+        # Reverse proxy to FastAPI
+        # -----------------------------
+        location / {
+            proxy_pass http://127.0.0.1:8002;
+
+            # Enforce HTTP/1.1 for websocket compatibility
+            proxy_http_version 1.1;
+
+            # Dynamically forward upgrade headers
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+
+            proxy_buffering off;
+
+            proxy_read_timeout 86400s;
+            proxy_send_timeout 86400s;
+        }
+    
+
+}
