@@ -513,6 +513,23 @@ async def test_notify():
     return {"status": "sent"}
 
 # ---------------- VOTE --------------------
+@app.post("/api/location")
+async def post_location(request: Request):
+    data = await request.json()
+    lat = data.get('lat')
+    lon = data.get('lon')
+    batt = data.get('batt')
+    acc = data.get('acc')
+    tst = data.get('tst')
+    sql = f'''
+        insert into location_log 
+            (latitude, longitude, battery, accuracy, timestamp)
+        values ({lat}, {lon}, {batt}, {acc}, {tst});
+    '''
+    await run_cmd(sql)
+    return '', 200
+
+# ---------------- VOTE --------------------
 @app.post("/api/vote")
 async def submit_vote(request: Request):
 
@@ -578,7 +595,7 @@ async def submit_vote(request: Request):
                             "{category}", 
                             {vendor_id}, 
                             curdate(), 
-                            {vote_stat}
+                            "{vote_stat}"
                         );
                     """)
 

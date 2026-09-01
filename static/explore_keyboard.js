@@ -79,7 +79,14 @@ function startVoiceRecognition(){
     containerElement.style.display = "block";
     if(!recognition)
         return;
-    switchTab("search");
+    /*
+     * Artists keeps the original Search tab behavior.
+     * Food has no Search tab; its four category tabs remain visible
+     * while a typed or spoken query temporarily filters the food list.
+     */
+    if (typeof exploreMode === "undefined" || exploreMode !== "food") {
+        switchTab("search");
+    }
     inputElement.value="";
     inputElement.dispatchEvent(new Event("input"));
     if (!listening) {
@@ -296,8 +303,12 @@ function initializeExploreKeyboard() {
 function openKeyboard(e) {
     e.preventDefault();
     renderKeyboard(currentLayout);
-    // Always return to the Search tab when typing begins.
-    if (typeof switchTab === "function") {
+    // Artists returns to Search when typing begins.
+    // Food keeps its selected category tab while the query filters food.
+    if (
+        typeof switchTab === "function" &&
+        (typeof exploreMode === "undefined" || exploreMode !== "food")
+    ) {
         switchTab("search");
     }
     containerElement.style.display = "block";

@@ -1,4 +1,4 @@
-const APP_VERSION = 187;
+const APP_VERSION = 192;
 
 self.addEventListener("message", event => {
 
@@ -147,8 +147,8 @@ self.addEventListener('push', function(event) {
 
         await self.registration.showNotification(title, {
           body: body,
-          icon: '/static/logo.webp',
-          badge: '/static/logo.webp',
+          icon: '/static/icons/van.webp',
+          badge: '/static/icons/van.webp',
           vibrate: [200, 100, 200, 100, 200],
           requireInteraction: true,
 //          tag: "fair-alert",

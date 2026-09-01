@@ -2497,3 +2497,18 @@ button:active {
     font-weight: bold;
     white-space: nowrap;
 }
+
+/* ---------- Food Explore Tabs ------------ */
+.food-tab {
+    font-size: 14px;
+    padding: 6px 2px;
+    white-space: nowrap;
+}
+
+@media (max-width:360px){
+    .food-tab {
+        font-size: 13px;
+        padding-left: 1px;
+        padding-right: 1px;
+    }
+}

@@ -3,32 +3,40 @@ let searchResults = [];
 let favoriteVendorIds = new Set();
 
 let currentTab = "search";
+let exploreMode = "artist";
+let foodVendors = [];
+let foodSearchActive = false;
 
 // ---------- App startup ----------
 
-async function initializeExplore() {
+async function initializeExplore(mode = "artist") {
 
-    const searchTab =
-        document.querySelector(".tab-button:nth-child(1)");
+    exploreMode = mode;
+    currentTab = mode === "food" ? "trucks" : "search";
+    foodSearchActive = false;
 
-    const favoritesTab =
-        document.querySelector(".tab-button:nth-child(2)");
+    const buttons = document.querySelectorAll(".tab-button");
 
-    searchTab.addEventListener(
-        "click",
-        () => switchTab("search")
-    );
-
-    favoritesTab.addEventListener(
-        "click",
-        () => switchTab("favorites")
-    );
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            switchTab(button.dataset.tab);
+        });
+    });
 
     buildSearchIndex();
 
     /*
-     * Load previously starred vendors before the
-     * first render.
+     * Food mode uses the same vendor dataset and search index,
+     * but limits the displayed population to food vendors.
+     */
+    foodVendors = exploreVendors.filter(v =>
+        ["truck", "food", "drink"].includes(
+            String(v.vendor_type || "").toLowerCase()
+        )
+    );
+
+    /*
+     * Load previously starred vendors before the first render.
      */
     const storedFavoriteIds =
         await loadFavoriteIdsFromDB();
@@ -46,7 +54,9 @@ async function initializeExplore() {
         }
     );
 
-    setupBrowse();
+    if (document.getElementById("browse-button")) {
+        setupBrowse();
+    }
 
     setupVendorDetailPopup();
 
@@ -64,7 +74,6 @@ async function initializeExplore() {
 
     performSearch("");
 }
-
 function setupBrowse() {
     const browseButton = document.getElementById("browse-button");
     const browseOverlay = document.getElementById("browse-overlay");
@@ -161,14 +170,35 @@ function buildSearchIndex() {
 }
 
 function performSearch(text) {
-    if (text.trim() === "") {
+    const query = text.trim();
+    foodSearchActive =
+        exploreMode === "food" && query !== "";
+
+    if (query === "") {
         searchResults = [];
     } else {
-        searchResults = miniSearch.search(text, {
+        searchResults = miniSearch.search(query, {
             prefix: true,
             fuzzy: 0.2
         });
+
+        /*
+         * In Food mode the same MiniSearch index is used, but
+         * search results are restricted to food vendors.
+         * MiniSearch results only contain storeFields, so use
+         * vendor_id to recover the complete vendor objects.
+         */
+        if (exploreMode === "food") {
+            const foodIds = new Set(
+                foodVendors.map(v => v.vendor_id)
+            );
+
+            searchResults = searchResults.filter(result =>
+                foodIds.has(result.vendor_id)
+            );
+        }
     }
+
     displayResults();
 }
 
@@ -176,19 +206,60 @@ function displayResults() {
     const list = document.querySelector(".scroll-list");
     list.innerHTML = "";
     updateTabCounts();
+
     let vendorsToDisplay;
-    if (currentTab === "search") {
-        vendorsToDisplay = searchResults;
+
+    if (exploreMode === "food") {
+
+        if (foodSearchActive) {
+            vendorsToDisplay = searchResults;
+        }
+        else if (currentTab === "trucks") {
+            vendorsToDisplay = foodVendors.filter(v =>
+                String(v.vendor_type || "").toLowerCase() === "truck"
+            );
+        }
+        else if (currentTab === "foods") {
+            vendorsToDisplay = foodVendors.filter(v =>
+                String(v.vendor_type || "").toLowerCase() === "food"
+            );
+        }
+        else if (currentTab === "drinks") {
+            vendorsToDisplay = foodVendors.filter(v =>
+                String(v.vendor_type || "").toLowerCase() === "drink"
+            );
+        }
+        else if (currentTab === "favorites") {
+            vendorsToDisplay = foodVendors.filter(v =>
+                favoriteVendorIds.has(v.vendor_id)
+            );
+        }
+        else {
+            vendorsToDisplay = [];
+        }
+
     } else {
-        vendorsToDisplay = exploreVendors.filter(v =>
-            favoriteVendorIds.has(v.vendor_id)
-        );
+
+        if (currentTab === "search") {
+            vendorsToDisplay = searchResults;
+        } else {
+            vendorsToDisplay = exploreVendors.filter(v =>
+                favoriteVendorIds.has(v.vendor_id)
+            );
+        }
     }
+
     vendorsToDisplay.forEach(vendor => {
-        list.appendChild(createVendorCard(vendor));
+        /*
+         * Search results contain only MiniSearch storeFields.
+         * Recover the complete vendor object for card/detail use.
+         */
+        const fullVendor =
+            exploreVendors.find(v => v.vendor_id === vendor.vendor_id) || vendor;
+
+        list.appendChild(createVendorCard(fullVendor));
     });
 }
-
 function setupVendorDetailPopup() {
     const overlay =
         document.getElementById("vendor-detail-overlay");
@@ -324,7 +395,7 @@ function createVendorCard(vendor) {
                 <span class="booth-number">${vendor.booth_number}</span>
             </div>
             <div class="description-text">
-                ${vendor.description}
+                ${vendor.description || ""}
             </div>
         </div>
     </div>
@@ -348,19 +419,36 @@ function createVendorCard(vendor) {
 }
 
 function switchTab(tab) {
+    if (exploreMode === "food") {
+        if (!["trucks", "foods", "drinks", "favorites"].includes(tab)) {
+            return;
+        }
+
+        currentTab = tab;
+        foodSearchActive = false;
+
+        const input = document.getElementById("virtual-input");
+        if (input) {
+            input.value = "";
+        }
+
+        document.querySelectorAll(".tab-button").forEach(button => {
+            const active = button.dataset.tab === tab;
+            button.classList.toggle("active-tab", active);
+            button.classList.toggle("inactive-tab", !active);
+        });
+
+        displayResults();
+        return;
+    }
+
     currentTab = tab;
     const buttons = document.querySelectorAll(".tab-button");
-    if (tab === "search") {
-        buttons[0].classList.add("active-tab");
-        buttons[0].classList.remove("inactive-tab");
-        buttons[1].classList.remove("active-tab");
-        buttons[1].classList.add("inactive-tab");
-    } else {
-        buttons[1].classList.add("active-tab");
-        buttons[1].classList.remove("inactive-tab");
-        buttons[0].classList.remove("active-tab");
-        buttons[0].classList.add("inactive-tab");
-    }
+    buttons.forEach(button => {
+        const active = button.dataset.tab === tab;
+        button.classList.toggle("active-tab", active);
+        button.classList.toggle("inactive-tab", !active);
+    });
     displayResults();
 }
 
@@ -380,6 +468,18 @@ function isFavorite(vendorId) {
 }
 
 function updateTabCounts() {
+    if (exploreMode === "food") {
+        document.getElementById("trucks-tab").textContent =
+            `Trucks (${foodVendors.filter(v => String(v.vendor_type || "").toLowerCase() === "truck").length})`;
+        document.getElementById("foods-tab").textContent =
+            `Foods (${foodVendors.filter(v => String(v.vendor_type || "").toLowerCase() === "food").length})`;
+        document.getElementById("drinks-tab").textContent =
+            `Drinks (${foodVendors.filter(v => String(v.vendor_type || "").toLowerCase() === "drink").length})`;
+        document.getElementById("favorites-tab").textContent =
+            `Favorites (${foodVendors.filter(v => favoriteVendorIds.has(v.vendor_id)).length})`;
+        return;
+    }
+
     document.getElementById("search-tab").textContent =
         `Search (${searchResults.length})`;
     document.getElementById("favorites-tab").textContent =

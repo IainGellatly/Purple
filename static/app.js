@@ -150,13 +150,13 @@ let gpsWatchId = null;
 // Set TEST_GPS_ENABLED to false before production.
 // ============================================================
 
-const TEST_GPS_ENABLED = false;
+const TEST_GPS_ENABLED = true;
 
-//const TEST_GPS_LAT = 43.042016;    //parking location
-//const TEST_GPS_LON = -77.252877;
+const TEST_GPS_LAT = 43.042016;    //parking location
+const TEST_GPS_LON = -77.252877;
 
-const TEST_GPS_LAT = 43.040637;    //near house location
-const TEST_GPS_LON = -77.257733;
+//const TEST_GPS_LAT = 43.040637;    //near house location
+//const TEST_GPS_LON = -77.257733;
 
 const TEST_GPS_ACCURACY_FEET = 20;
 
@@ -615,17 +615,18 @@ let exploreBooths = [];
 let exploreCategories = [];
 let exploreZones = [];
 
-async function loadExplore() {
+async function loadExplore(page = "artist") {
 
     await window.cacheReady;
 
-    console.log("loadExplore()");
+    console.log("loadExplore()", page);
 
     const content = document.getElementById("content");
+    const isFood = page === "food";
 
     /*
      * Load Explore data from the existing Purple IndexedDB
-     * resource cache.
+     * resource cache. Food and Artists use the SAME dataset.
      */
     const vendorRecord =
         await CacheManager.getResource("vendors");
@@ -644,7 +645,6 @@ async function loadExplore() {
     exploreCategories = categoryRecord?.data || [];
     exploreZones = zoneRecord?.data || [];
 
-
     try {
 
         const html = `
@@ -662,7 +662,7 @@ async function loadExplore() {
                     </div>
                     <div class="ticket-header-text">
                         <div class="ticket-header-title">
-                            Artists & Crafters
+                            ${isFood ? "Trucks, Foods & Drinks for Everyone" : "Artists & Crafters"}
                         </div>
                         <div class="ticket-header-subtitle">
                             Type, tap or talk to explore!
@@ -695,21 +695,24 @@ async function loadExplore() {
                         placeholder="Enter names, products, interests..."
                         class="search-input">
 
+                    ${isFood ? "" : `
                     <button
                         id="browse-button"
                         class="browse-button"
                         type="button">
 
-                        <span>Browse Artists</span>
+                        <span>Browse Categories</span>
                         <span class="browse-arrow">▼</span>
 
                     </button>
+                    `}
 
                 </div>
 
             </div>
 
 
+            ${isFood ? "" : `
             <!-- Browse popup -->
 
             <div
@@ -726,7 +729,7 @@ async function loadExplore() {
                     <div
                         id="browse-title"
                         class="browse-title">
-                        Browse Vendors
+                        Browse Categories
                     </div>
 
                     <div
@@ -744,6 +747,7 @@ async function loadExplore() {
                 </div>
 
             </div>
+            `}
 
 
             <!-- Vendor detail popup -->
@@ -782,9 +786,43 @@ async function loadExplore() {
 
                 <div class="tab-headers">
 
+                    ${isFood ? `
+                    <button
+                        id="trucks-tab"
+                        class="tab-button food-tab active-tab"
+                        data-tab="trucks"
+                        type="button">
+                        Trucks (0)
+                    </button>
+
+                    <button
+                        id="foods-tab"
+                        class="tab-button food-tab inactive-tab"
+                        data-tab="foods"
+                        type="button">
+                        Foods (0)
+                    </button>
+
+                    <button
+                        id="drinks-tab"
+                        class="tab-button food-tab inactive-tab"
+                        data-tab="drinks"
+                        type="button">
+                        Drinks (0)
+                    </button>
+
+                    <button
+                        id="favorites-tab"
+                        class="tab-button food-tab inactive-tab"
+                        data-tab="favorites"
+                        type="button">
+                        Favorites (0)
+                    </button>
+                    ` : `
                     <button
                         id="search-tab"
                         class="tab-button active-tab"
+                        data-tab="search"
                         type="button">
                         Search (0)
                     </button>
@@ -792,9 +830,11 @@ async function loadExplore() {
                     <button
                         id="favorites-tab"
                         class="tab-button inactive-tab"
+                        data-tab="favorites"
                         type="button">
                         My Favorites (0)
                     </button>
+                    `}
 
                 </div>
 
@@ -832,7 +872,7 @@ async function loadExplore() {
         `;
 
         await CacheManager.renderHtml(content, html);
-        await initializeExplore();
+        await initializeExplore(page);
         scrollToContent();
 
     } catch (err) {
@@ -845,7 +885,6 @@ async function loadExplore() {
             </div>`;
     }
 }
-
 // ============================================================
 // PARKING SPOT
 // ============================================================
@@ -2380,7 +2419,7 @@ const vendors =
 
 const food =
   vendors.filter(
-    x => x.vendor_type === "food"
+    x => x.vendor_type === "food" || x.vendor_type === "truck" || x.vendor_type === "drink"
   );
 
 const music =
@@ -5613,9 +5652,9 @@ if (page === "vote"){
   return;
 }
 
-// --------------- ARTIST ----------------
-if (page === "artist"){
-  loadExplore();
+// --------------- FOOD / ARTIST ----------------
+if (page === "food" || page === "artist"){
+  loadExplore(page);
   return;
 }
 
