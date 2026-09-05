@@ -2119,6 +2119,11 @@ button:active {
     line-height: 1;
 }
 
+.zone-favorite-count {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 6px;
+}
 
 /* ---------------------------------------------------------
    Vendor labels at higher zoom

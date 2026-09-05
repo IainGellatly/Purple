@@ -152,11 +152,11 @@ let gpsWatchId = null;
 
 const TEST_GPS_ENABLED = true;
 
-const TEST_GPS_LAT = 43.042016;    //parking location
-const TEST_GPS_LON = -77.252877;
+//const TEST_GPS_LAT = 43.042016;    //parking location
+//const TEST_GPS_LON = -77.252877;
 
-//const TEST_GPS_LAT = 43.040637;    //near house location
-//const TEST_GPS_LON = -77.257733;
+const TEST_GPS_LAT = 43.040637;    //near house location
+const TEST_GPS_LON = -77.257733;
 
 const TEST_GPS_ACCURACY_FEET = 20;
 
@@ -1740,7 +1740,7 @@ if (cachedPages.includes(page)) {
       directions: "Directions",
       firstaid: "First Aid Station",
       times: "Start Your Day Here",
-      demos: "Live Demos",
+      demos: "Demonstrations",
       parade: 'Fair Parade',
       exhibits: 'Judged Exhibits',
       tasting: 'Beer & Wine Tasting',
@@ -1754,7 +1754,7 @@ if (cachedPages.includes(page)) {
       exhibits: "Agriculture, Domestics, Animals and Much More",
       about: "Sat-Sun Sept 19-20, 2026",
       times: "Have a Great Purple Day",
-      demos: "Seen and Learn About New DIY Upcycling Products",
+      demos: "Seen, Learn & Try New DIY Upcycling Products",
       directions: "The Best Way to a Great Purple Day!!",
       parade: 'Saturday, August 15th 4PM',
       tasting: 'Gourmet Food & Drink from Across the Finger Lakes'
@@ -3107,7 +3107,7 @@ async function showMap(options = {}){
 
       <div class="ticket-header-subtitle">
         <span style="font-size: 1em;">
-          Pinch/spread to explore. <br>Red dot is your location.
+          Red Dot is You. <br>Favorite Vendor Count Next to Zone Names.
         </span>
       </div>
 
@@ -3406,12 +3406,13 @@ function utilitySymbol(type){
 
     case "tent":
       return `<svg ${common} class="utility-svg">
-        <path d="M3 20L12 4l9 16M6 20h12M8.5 14h7"/>
+        <path d="M4 20V10L12 4l8 6v10M4 10h16M4 20h16M9 20v-6h6v6"/>
       </svg>`;
 
     case "first_aid":
       return `<svg ${common} class="utility-svg">
-        <path d="M12 4v16M4 12h16"/>
+        <path fill="currentColor" stroke="none"
+              d="M9 4h6v5h5v6h-5v5H9v-5H4V9h5V4z"/>
       </svg>`;
 
     case "atm":
@@ -3458,6 +3459,11 @@ case "restroom":
         <circle cx="16" cy="17" r="1.5"/>
       </svg>`;
 
+    case "latte":
+      return `<svg ${common} class="utility-svg">
+        <path d="M6 8h11v8a4 4 0 0 1-4 4h-3a4 4 0 0 1-4-4V8zM17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 5c0-1 1-1.5 1-2M11 5c0-1 1-1.5 1-2M14 5c0-1 1-1.5 1-2M5 20h13"/>
+      </svg>`;
+
     default:
       return `<svg ${common} class="utility-svg">
         <circle cx="12" cy="12" r="8"/>
@@ -3467,21 +3473,27 @@ case "restroom":
 
 const utilityMarkerRecords = [];
 
-function utilityRadiusFor(lat, zoom){
+function utilityRadiusFor(lat, zoom, scale = 1){
   /*
    * Utilities intentionally scale more slowly than vendor booths.
    * At the widest map view they are only slightly larger than
    * the smallest vendor dots, then grow as the user zooms in.
+   *
+   * The database scale factor is applied AFTER the existing
+   * zoom-based calculation so it changes only the relative
+   * size of each utility, without changing zoom behavior.
    */
   const vendorRadius = dotRadiusFor(lat, zoom);
 
-  return Math.max(
+  const baseRadius = Math.max(
     5,
     Math.min(
       vendorRadius * 1.5,
       14
     )
   );
+
+  return baseRadius * scale;
 }
 
 function refreshUtilityScaling(){
@@ -3494,7 +3506,8 @@ function refreshUtilityScaling(){
       const radius =
         utilityRadiusFor(
           record.lat,
-          zoom
+          zoom,
+          record.scale
         );
 
       const size =
@@ -3564,7 +3577,11 @@ function addUtilityMarkers(){
         lat: lat,
         lon: lon,
         type: type,
-        color: color
+        color: color,
+        scale:
+          Number.isFinite(Number(utility.scale))
+            ? Number(utility.scale)
+            : 1
       });
 
     }
@@ -3579,7 +3596,8 @@ function addUtilityMarkers(){
       const radius =
         utilityRadiusFor(
           record.lat,
-          map.getZoom()
+          map.getZoom(),
+          record.scale
         );
 
       const size =
@@ -3633,39 +3651,44 @@ function addUtilityMarkers(){
 
       record.marker = marker;
 
+      const utility =
+        utilities.find(
+          u =>
+            Number(u.latitude) === record.lat &&
+            Number(u.longitude) === record.lon
+        );
+
+      /*
+       * Bind the popup once when the marker is created.
+       * The click handler only opens the existing popup, which
+       * allows the same utility to be tapped repeatedly after
+       * the popup has been closed.
+       */
+      marker.bindPopup(
+        `<div class="utility-popup">
+           <div class="utility-popup-title">
+             ${escapeHtml(
+               utility?.utility_name ||
+               UTILITY_LABELS[record.type] ||
+               "Festival Utility"
+             )}
+           </div>
+         </div>`,
+        {
+          className:
+            "utility-popup-container",
+
+          maxWidth: 220,
+
+          closeButton: true
+        }
+      );
+
       marker.on(
         "click",
         function(e){
-
           L.DomEvent.stop(e);
-
-          const utility =
-            utilities.find(
-              u =>
-                Number(u.latitude) === record.lat &&
-                Number(u.longitude) === record.lon
-            );
-
-          marker.bindPopup(
-            `<div class="utility-popup">
-               <div class="utility-popup-title">
-                 ${escapeHtml(
-                   utility?.utility_name ||
-                   UTILITY_LABELS[record.type] ||
-                   "Festival Utility"
-                 )}
-               </div>
-             </div>`,
-            {
-              className:
-                "utility-popup-container",
-
-              maxWidth: 220,
-
-              closeButton: true
-            }
-          ).openPopup();
-
+          marker.openPopup();
         }
       );
 
@@ -4479,16 +4502,10 @@ function computeFavoriteCountsByZone(){
         zone.zone_name
       );
 
-
-    if (favoriteCount > 0){
-
-      label +=
-        " (" +
-        favoriteCount +
-        ")";
-
-    }
-
+if (favoriteCount > 0){
+  label +=
+    ` <span class="zone-favorite-count">(${favoriteCount})</span>`;
+}
 
     return `
       <div
@@ -4839,7 +4856,7 @@ const polygon =
 
               weight:
                 isFavorite
-                  ? 3.75
+                  ? 4.75
                   : 1.5,
 
               opacity: 1,
