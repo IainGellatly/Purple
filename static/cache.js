@@ -251,7 +251,7 @@ async init() {
             this.syncVotes();
             this.syncAlerts();
 
-        }, 60000);
+        }, 120000);
     }
 
   openDB() {

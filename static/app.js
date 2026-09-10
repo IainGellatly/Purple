@@ -150,7 +150,7 @@ let gpsWatchId = null;
 // Set TEST_GPS_ENABLED to false before production.
 // ============================================================
 
-const TEST_GPS_ENABLED = true;
+const TEST_GPS_ENABLED = false;
 
 //const TEST_GPS_LAT = 43.042016;    //parking location
 //const TEST_GPS_LON = -77.252877;
@@ -1740,7 +1740,7 @@ if (cachedPages.includes(page)) {
       directions: "Directions",
       firstaid: "First Aid Station",
       times: "Start Your Day Here",
-      demos: "Demonstrations",
+      demos: "Demonstration Tent",
       parade: 'Fair Parade',
       exhibits: 'Judged Exhibits',
       tasting: 'Beer & Wine Tasting',
@@ -1754,7 +1754,7 @@ if (cachedPages.includes(page)) {
       exhibits: "Agriculture, Domestics, Animals and Much More",
       about: "Sat-Sun Sept 19-20, 2026",
       times: "Have a Great Purple Day",
-      demos: "Seen, Learn & Try New DIY Upcycling Products",
+      demos: "See, Learn & Try New DIY Upcycling Products",
       directions: "The Best Way to a Great Purple Day!!",
       parade: 'Saturday, August 15th 4PM',
       tasting: 'Gourmet Food & Drink from Across the Finger Lakes'
@@ -3107,7 +3107,7 @@ async function showMap(options = {}){
 
       <div class="ticket-header-subtitle">
         <span style="font-size: 1em;">
-          Red Dot is You. <br>Favorite Vendor Count Next to Zone Names.
+          Explore Your Great Big Purple Day!
         </span>
       </div>
 
@@ -3121,8 +3121,14 @@ async function showMap(options = {}){
 
 </div>
 
+<div class="gps-status">
+  Pinch/Spread to Zoom. Tap Icons for Details!
+</div>
+<div class="gps-status">
+  Favorite Vendors are Highlighted. Zones Show Counts.
+</div>
 <div id="gpsStatus" class="gps-status">
-  Location Dot Will Appear When at Festival
+  GPS Location Dot Will Appear When at Festival
 </div>
 
 <div id="galleryMap"></div>

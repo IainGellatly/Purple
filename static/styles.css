@@ -1000,18 +1000,17 @@ button:active {
   box-shadow: none;
 }
 
-
 /* TITLE */
 
 .welcome-title {
   color: #5c249c;
 
-  font-size: 26px;
+  font-size: 24px;
   font-weight: bold;
-
+  font-style: italic;
   line-height: 1.1;
 
-  margin: 0 28px 6px 28px;
+  margin: 0 20px 6px 20px;
 }
 
 
@@ -1020,11 +1019,11 @@ button:active {
 .welcome-image {
   display: block;
 
-  width: 78%;
+  width: 70%;
   max-width: 275px;
   aspect-ratio: 1 / 1;
 
-  margin: 0 auto 8px auto;
+  margin: 0 auto 6px auto;
 
   object-fit: cover;
 
@@ -1039,11 +1038,11 @@ button:active {
 .welcome-message {
   color: #5c249c;
 
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.12;
 
-  text-align: left;
-
+  text-align: center;
+  font-style: italic;
   margin: 4px 10px 0 10px;
 }
 
@@ -1052,9 +1051,9 @@ button:active {
 .welcome-signature {
   color: #5c249c;
 
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-
+  font-style: italic;
   text-align: right;
 
   margin: 4px 10px 0 10px;
@@ -1104,7 +1103,7 @@ button:active {
 .parade-subtitle {
     font-size: 0.96rem;
     line-height: 1.2;
-    margin-bottom: 12px;
+    font-style: italic;
 }
 
 /* Image wrapper */
@@ -1113,20 +1112,20 @@ button:active {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    border-radius: 20px;
-    border: 3px solid #5c249c;
     box-shadow:
         0 3px 8px rgba(0,0,0,0.18);
     background: #ffffff;
+    padding: 12px 12px 12px 12px;
 }
 
 /* Actual image */
 .parade-map {
     display: block;
-    width: 100%;
+    width: 75%;
     max-width: 900px;
     height: auto;
     object-fit: contain;
+    margin-bottom: 16px;
 }
 
 /* EVENT CARD */
@@ -1763,6 +1762,7 @@ button:active {
   line-height: 1.2;
   margin-top: 2px;           /* Minor separation from the header row */
   word-break: break-word;
+  text-align: left;
 }
 
 /* Main outer container spanning 96% width and 50% screen height */
@@ -1805,6 +1805,11 @@ button:active {
 .inactive-tab {
   background-color: #f3e8ff;  /* Light purple background */
   color: #5c249c;            /* Dark purple text */
+}
+
+.tab-button[data-tab="favorites"].inactive-tab {
+    background-color: #01b19d;
+    color: white;
 }
 
 /* Scrollable box matching the card width and rounding */

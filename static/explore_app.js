@@ -101,13 +101,18 @@ function setupBrowse() {
 
             // Close the popup.
             closeBrowsePopup();
-            // Put the selected category into the existing search field.
-            input.value = categoryValue;
-            /*
-             * Use the exact same search function used by
-             * normal typed searches.
-             */
-            performSearch(categoryValue);
+
+            // Browse is a category filter, not a keyword search.
+            // Leave the search field blank.
+            input.value = "";
+
+            // Match the vendor's actual category exactly.
+            searchResults = exploreVendors.filter(vendor =>
+                String(vendor.category || "").trim().toLowerCase() ===
+                String(categoryValue || "").trim().toLowerCase()
+            );
+
+            displayResults();
         });
 
         categoryList.appendChild(button);
