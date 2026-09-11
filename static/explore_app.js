@@ -389,8 +389,8 @@ function createVendorCard(vendor) {
     <div class="info-box">
         <img
             src="${favoriteVendorIds.has(vendor.vendor_id)
-        ? "/static/images/star_filled.png"
-        : "/static/images/star_outline.png"}"
+        ? "/static/icons/star_filled.png"
+        : "/static/icons/star_outline.png"}"
             alt="Favorite"
             class="info-box-icon">
 

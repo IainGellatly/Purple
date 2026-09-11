@@ -121,8 +121,8 @@ async def add_cache_headers(request, call_next):
 async def root():
 
     return FileResponse(
-        "static/coming_soon.html"
-#        "static/index.html"
+#        "static/coming_soon.html"
+        "static/index.html"
     )
 
 @app.get("/test", response_class=HTMLResponse)
@@ -385,7 +385,7 @@ async def get_events(event_type: str | None = None):
                 featured,
                 date_format(start_time, "%l:%i %p") as start_time,
                 date_format(end_time, "%l:%i %p") as end_time,
-                date_format(start_time, "%W, %b %D") as day_date,
+                date_format(start_time, "%W, %M %D") as day_date,
                 start_time as start_datetime,
                 end_time as end_datetime
             from events 

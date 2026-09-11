@@ -838,6 +838,12 @@ button:active {
   width: 95%;
   height: 80px;
   margin-top: 6px;
+  font-size: 1.2rem;
+  box-sizing: border-box;
+}
+
+.survey-keyboard-active #content {
+  padding-bottom: 45vh;
 }
 
 .coupon-card {
@@ -1209,49 +1215,138 @@ button:active {
   justify-content: center;
   padding-top: calc(env(safe-area-inset-top) + 12px);
 }
+/* =========================================================
+   iOS INSTALL OVERLAY
+   ========================================================= */
+
+#iosInstallOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 99999;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  padding-top: calc(env(safe-area-inset-top) + 12px);
+}
+
+
+/* INSTALL SHEET */
 
 .ios-install-sheet {
   width: 100%;
   max-width: 420px;
+
   background: #f3efe6;
+
   border-top-left-radius: 22px;
   border-top-right-radius: 22px;
-  padding: 22px 20px 28px;
+
+  padding: 16px 16px 20px;
+
   text-align: center;
+
   box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+
+  box-sizing: border-box;
 }
+
+
+/* TITLE */
 
 .ios-install-title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   color: #5b4636;
 }
 
+
+/* EACH STEP */
+
 .ios-install-step {
   font-size: 18px;
-  margin-top: 14px;
+  color: #333;
+
+  margin-top: 8px;
+}
+
+
+/* STEP TEXT */
+
+.ios-install-step-text {
+  line-height: 1.15;
+}
+
+
+/* SMALL SCREENSHOT */
+
+.ios-install-image {
+  display: block;
+
+  width: auto;
+  max-width: 85%;
+  height: auto;
+  max-height: 43px;
+
+  margin: 5px auto 3px auto;
+
+  border-radius: 3px;
+}
+
+
+/* SMALL "DON'T SEE IT?" NOTE */
+
+.ios-install-note {
+  font-size: 15px;
+  line-height: 1.15;
+
+  margin: 3px auto 0 auto;
+
+  max-width: 360px;
+  color: #444;
+}
+
+
+/* FINAL INSTRUCTION */
+
+.ios-install-open {
+  font-size: 18px;
+  line-height: 1.15;
+
+  margin-top: 7px;
+
   color: #333;
 }
 
-.ios-install-share {
-  font-size: 48px;
-  margin: 10px 0;
-}
+
+/* CLOSE BUTTON */
 
 .ios-install-close {
-  margin-top: 24px;
-  padding: 12px 24px;
+  display: block;
+
+  width: 80%;
+
+  margin: 12px auto 0 auto;
+
+  padding: 9px 20px;
+
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
+
   background: #5c249c;
   color: white;
+
   font-size: 18px;
+
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
 }
 
 .map-poi-icon {
   background: #f5c400;
-  border: 2px solid #8b5a2b;
+  border: 1px solid #8b5a2b;
   border-radius: 8px;
   width: 28px;
   height: 28px;
@@ -1325,7 +1420,7 @@ button:active {
 /* title */
 
 .ticket-header-title {
-  font-size: 1.65rem;
+  font-size: 1.6rem;
   font-weight: bold;
   line-height: 1.0;
   color: #efd279;
@@ -1335,7 +1430,7 @@ button:active {
 
 .ticket-header-subtitle {
   margin-top: 4px;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: bold;
   line-height: 1.1;
   color: #01b19d;
@@ -1475,6 +1570,16 @@ button:active {
     box-shadow:0 2px 6px rgba(0,0,0,.05);
 }
 
+.food-search-hint {
+    flex: 1 1 auto;
+    text-align: center;
+    color: #5c249c;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 1.15;
+    padding-top: 1px;
+}
+
 .voice-button{
     width:76px;
     height:90px;
@@ -1482,7 +1587,7 @@ button:active {
     margin:0;
     padding:0;
     box-sizing:border-box;
-    border:2px solid #5c249c;
+    border:1px solid #5c249c;
     border-radius:10px;
     background:#5c249c;
     color:white;
@@ -1516,7 +1621,7 @@ button:active {
     display:flex;
     align-items:center;
     justify-content:space-between;
-    border:2px solid #5c249c;
+    border:1px solid #5c249c;
     border-radius:6px;
     background:#f3e8ff;
     color:#5c249c;
@@ -1558,7 +1663,7 @@ button:active {
     padding:6px;
     font-size:18px;
     font-weight:bold;
-    border:2px solid #5c249c;
+    border:1px solid #5c249c;
     border-bottom:none;
     border-radius:10px 10px 0 0;
     box-shadow:none;
@@ -1580,7 +1685,7 @@ button:active {
 .scroll-list {
     flex-grow:1;
     min-height:0;
-    border:2px solid #5c249c;
+    border:1px solid #5c249c;
     border-bottom-left-radius:8px;
     border-bottom-right-radius:8px;
     background-color:white;
@@ -1787,7 +1892,7 @@ button:active {
   padding: 6px;
   font-size: 18px;
   font-weight: bold;
-  border: 2px solid #5c249c;
+  border: 1px solid #5c249c;
   border-bottom: none;       /* Open bottom so it flows into the box */
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -1815,7 +1920,7 @@ button:active {
 /* Scrollable box matching the card width and rounding */
 .scroll-list {
   flex-grow: 1;              /* Fills the remaining space of the 50vh height */
-  border: 2px solid #5c249c;
+  border: 1px solid #5c249c;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   background-color: white;
@@ -1851,7 +1956,7 @@ button:active {
     height: 42px;
     margin: 0 auto 8px auto;
     padding: 0 12px;
-    border: 2px solid #5c249c;
+    border: 1px solid #5c249c;
     border-radius: 6px;
     background: #f3e8ff;
     color: #5c249c;
@@ -1995,7 +2100,7 @@ button:active {
     box-sizing: border-box;
     padding: 20px 16px 16px 16px;
     background: #efe4fb;
-    border: 2px solid #5c249c;
+    border: 1px solid #5c249c;
     border-radius: 10px;
     box-shadow: 0 8px 30px rgba(0,0,0,.30);
     overflow-y: auto;
@@ -2072,7 +2177,7 @@ button:active {
     margin-top: 8px;
     overflow: hidden;
     background: #efe3fb;
-    border: 2px solid #5f259f;
+    border: 1px solid #5f259f;
     border-radius: 8px;
     touch-action: none;
 }

@@ -104,17 +104,17 @@ function showFacebookBrowserMessage() {
                 line-height:1.5;
             ">
 
-                Facebook's built-in browser prevents
-                App installation.
+                You're currently using Facebook's built-in
+                limited browser.
 
                 <br><br>
 
-                Tap the corner menu (⋮ or ⋯)<br>
+                Tap the top corner menu (⋮ or ⋯) and<br>
                 Select "Open in external browser"</b>
 
                 <br><br>
 
-                for the best Purple App experience.
+                for the best Purple App experience!
 
             </div>
 
@@ -283,34 +283,71 @@ function showInstallInstructions(){
 
   overlay.id = 'iosInstallOverlay';
 
-  overlay.innerHTML = `
+overlay.innerHTML = `
 
-    <div class="ios-install-sheet">
+  <div class="ios-install-sheet">
 
-      <div class="ios-install-title">
-        Install the Purple App
-      </div>
-
-      <div class="ios-install-step">
-        1. Tap ⋯ and "Share".<br><br>
-        2. Scroll down and tap "Add to Home Screen" <br><br>
-        (Dont see it? Scroll to bottom, tap "Edit Actions", then "Add to Home Screen")<br><br>
-        3. Tap "Add" in top corner
-      </div>
-
-      <div class="ios-install-step">
-        Open the app using the Purple icon.
-      </div>
-
-      <button
-        class="ios-install-close"
-        onclick="closeInstallInstructions()"
-      >
-        Close
-      </button>
-
+    <div class="ios-install-title">
+      Install the Purple App
     </div>
-  `;
+
+    <!-- STEP 1 -->
+    <div class="ios-install-step">
+      <div class="ios-install-step-text">
+        1. Tap <b>⋯</b> below and "Share".
+      </div>
+
+      <img
+        class="ios-install-image"
+        src="/static/icons/install/share.webp"
+        alt="Tap Share"
+      >
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="ios-install-step">
+      <div class="ios-install-step-text">
+        2. Tap "Add to Home Screen".
+      </div>
+
+      <img
+        class="ios-install-image"
+        src="/static/icons/install/add_home.webp"
+        alt="Tap Add to Home Screen"
+      >
+
+      <div class="ios-install-note">
+        Don't see it? Scroll down, tap "Edit Actions",
+        then "Add to Home Screen".
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="ios-install-step">
+      <div class="ios-install-step-text">
+        3. Tap "Add" in top corner.
+      </div>
+
+      <img
+        class="ios-install-image"
+        src="/static/icons/install/add_save.webp"
+        alt="Tap Add"
+      >
+    </div>
+
+    <div class="ios-install-open">
+      Open the app using the Purple icon.
+    </div>
+
+    <button
+      class="ios-install-close"
+      onclick="closeInstallInstructions()"
+    >
+      Close
+    </button>
+
+  </div>
+`;
 
   document.body.appendChild(overlay);
 }
@@ -662,10 +699,10 @@ async function loadExplore(page = "artist") {
                     </div>
                     <div class="ticket-header-text">
                         <div class="ticket-header-title">
-                            ${isFood ? "Trucks, Foods & Drinks for Everyone" : "Artists & Crafters"}
+                            ${isFood ? "Trucks, Food & Drink for Everyone" : "Artists & Crafters"}
                         </div>
                         <div class="ticket-header-subtitle">
-                            Type, tap or talk to explore!
+                            Type, tap or talk to explore
                         </div>
                     </div>
                     <div class="ticket-header-date">
@@ -695,7 +732,12 @@ async function loadExplore(page = "artist") {
                         placeholder="Enter names, products, interests..."
                         class="search-input">
 
-                    ${isFood ? "" : `
+                    ${isFood ? `
+                    <div class="food-search-hint">
+                        <div>Tap Each Vendor for Details.</div>
+                        <div>Tap Star to Save Your Favorites!</div>
+                    </div>
+                    ` : `
                     <button
                         id="browse-button"
                         class="browse-button"
@@ -1200,15 +1242,15 @@ async function markParkingSpot() {
                     : "";
 
             alert(
-                "We could not get a sufficiently accurate GPS location.\\n\\n" +
-                `Please try again. The location needs to be within ±${PARKING_ACCURACY_THRESHOLD_FEET} feet.` +
+                "We couldn't get your accurate GPS location. " +
+                'Please try again. The location needs to be within about 50-60 feet.' +
                 best
             );
 
         } else {
 
             alert(
-                "Unable to determine your location.\\n\\n" +
+                "We couldn't get your GPS location. " +
                 "Please try again."
             );
 
@@ -1567,7 +1609,7 @@ async function loadParking() {
                                 Festival Parking
                             </div>
                             <div class="ticket-header-subtitle">
-                                Mark Your Spot as You Start Your Great Purple Day!
+                                Mark Your Spot When You Start Your Purple Day!
                             </div>
                         </div>
                         <div class="ticket-header-date">
@@ -1740,7 +1782,7 @@ if (cachedPages.includes(page)) {
       directions: "Directions",
       firstaid: "First Aid Station",
       times: "Start Your Day Here",
-      demos: "Demonstration Tent",
+      demos: "Demo Tent",
       parade: 'Fair Parade',
       exhibits: 'Judged Exhibits',
       tasting: 'Beer & Wine Tasting',
@@ -2184,7 +2226,7 @@ let h = `
     let currentDay = '';
     const today = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
-      month: 'short',
+      month: 'long',
       day: 'numeric'
     });
 
@@ -2869,7 +2911,7 @@ let h = `
       </div>
 
       <div class="ticket-header-subtitle">
-        Click & Get Your Coupon
+        Click Answers and Get Your Coupon
       </div>
 
     </div>
@@ -2919,6 +2961,8 @@ let h = `
       <div class="ui-card-content">
         <div class="ui-card-title">Comments?</div>
         <textarea class="survey-comment"
+          onfocus="handleSurveyCommentFocus(this)"
+          onblur="handleSurveyCommentBlur()"
           oninput="updateSurveyComment(this.value)"></textarea>
       </div>
     </div>
@@ -2963,6 +3007,77 @@ function toggleSurvey(qid, aid, max, btn){
 function updateSurveyComment(val){
   surveyComment = val;
   updateSurveySubmit();
+}
+
+function handleSurveyCommentFocus(el){
+
+  // Only needed for Facebook's built-in browser
+  if (!isFacebookBrowser) return;
+
+  document.body.classList.add("survey-keyboard-active");
+
+  // Give the keyboard time to start opening
+  setTimeout(() => {
+
+    const rect = el.getBoundingClientRect();
+
+    const targetY =
+      window.scrollY +
+      rect.top -
+      100;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth"
+    });
+
+  }, 300);
+
+  // Facebook sometimes finishes opening the keyboard later
+  setTimeout(() => {
+
+    const rect = el.getBoundingClientRect();
+
+    const targetY =
+      window.scrollY +
+      rect.top -
+      100;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth"
+    });
+
+  }, 700);
+
+  // Final adjustment after the keyboard is fully visible
+  setTimeout(() => {
+
+    const rect = el.getBoundingClientRect();
+
+    const targetY =
+      window.scrollY +
+      rect.top -
+      100;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth"
+    });
+
+  }, 1100);
+}
+
+
+function handleSurveyCommentBlur(){
+
+  if (!isFacebookBrowser) return;
+
+  // Give the keyboard time to disappear before
+  // removing the extra scroll space.
+  setTimeout(() => {
+    document.body.classList.remove("survey-keyboard-active");
+  }, 300);
 }
 
 function updateSurveySubmit(){
@@ -3107,7 +3222,7 @@ async function showMap(options = {}){
 
       <div class="ticket-header-subtitle">
         <span style="font-size: 1em;">
-          Explore Your Great Big Purple Day!
+          Explore Your Great Big <br> Purple Day!
         </span>
       </div>
 
@@ -6405,7 +6520,6 @@ async function installApp(){
     deferredInstallPrompt = null;
   }
 }
-
 
 // ---------------- TASTING LOADER ----------------
 async function loadTasting(){
