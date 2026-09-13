@@ -81,7 +81,7 @@ function cleanTranscript(text){
         .trim();
 }
 
-function startVoiceRecognition(){
+async function startVoiceRecognition(){
 
     if (!voiceSupported) {
         alert("Voice search not supported on this browser.");
@@ -90,21 +90,68 @@ function startVoiceRecognition(){
 
     haptic();
     containerElement.style.display = "block";
-    if(!recognition)
+
+    if (!recognition)
         return;
-    /*
-     * Artists keeps the original Search tab behavior.
-     * Food has no Search tab; its four category tabs remain visible
-     * while a typed or spoken query temporarily filters the food list.
-     */
+
     if (typeof exploreMode === "undefined" || exploreMode !== "food") {
         switchTab("search");
     }
-    inputElement.value="";
+
+    inputElement.value = "";
     inputElement.dispatchEvent(new Event("input"));
-    if (!listening) {
-        recognition.start();
+
+    if (listening)
+        return;
+
+    /*
+     * iOS standalone/Home Screen workaround.
+     *
+     * Explicitly acquire the microphone before starting
+     * SpeechRecognition.  WebKit has a current standalone-mode
+     * bug where SpeechRecognition can activate the system mic
+     * indicator but never deliver a result.
+     */
+    const isIOS =
+        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+    if (isIOS && isStandalone && navigator.mediaDevices?.getUserMedia) {
+
+        try {
+
+            const stream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+            /*
+             * Give WebKit a moment to finish establishing the
+             * microphone session before SpeechRecognition starts.
+             */
+            await new Promise(resolve =>
+                setTimeout(resolve, 300)
+            );
+
+            stream.getTracks().forEach(track =>
+                track.stop()
+            );
+
+        } catch (err) {
+
+            console.log(
+                "Microphone priming failed:",
+                err
+            );
+
+            return;
+        }
     }
+
+    recognition.start();
 }
 
 recognition.onresult = (event) => {
