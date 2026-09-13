@@ -41,10 +41,17 @@ const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+const voiceSupported =
+    !!SpeechRecognition &&
+    !(
+        /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+        /CriOS/i.test(navigator.userAgent)
+    );
+
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = false;
 }
 
@@ -75,6 +82,12 @@ function cleanTranscript(text){
 }
 
 function startVoiceRecognition(){
+
+    if (!voiceSupported) {
+        alert("Voice search not supported on this browser.");
+        return;
+    }
+
     haptic();
     containerElement.style.display = "block";
     if(!recognition)
@@ -260,10 +273,10 @@ function initializeExploreKeyboard() {
 
     }
 
-
     const voiceButton =
         document.getElementById("voice-button");
 
+    updateVoiceSupport();
 
     voiceButton.addEventListener(
         "click",
@@ -316,6 +329,18 @@ function openKeyboard(e) {
 
 function closeKeyboard() {
   containerElement.style.display = "none";
+}
+
+function updateVoiceSupport(){
+    document
+        .querySelectorAll(".mic-btn,#voice-button")
+        .forEach(button => {
+            if (!voiceSupported) {
+                button.classList.add("voice-unsupported");
+            } else {
+                button.classList.remove("voice-unsupported");
+            }
+        });
 }
 
 function updateVoiceButtons(listening){

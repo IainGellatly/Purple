@@ -57,29 +57,61 @@ function initializeInstallUI() {
     btn.addEventListener('click', installApp);
   }
 
-  if (installUI) {
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
+if (installUI) {
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
 
+if (isChromeIOS) {
+  // Chrome on iPhone/iPad:
+  // fixed install container, removed from page layout.
+  installUI.style.display = 'block';
+  installUI.style.position = 'fixed';
+  installUI.style.top = '10px';
+  installUI.style.right = '2px';
+  installUI.style.left = 'auto';
+  installUI.style.width = '72px';
+  installUI.style.margin = '0';
+  installUI.style.zIndex = '1000';
+
+} else {
     installUI.style.display =
       standalone ? 'none' : 'block';
   }
 }
 
-// --------- PLATFORM DETECTION ----------
-const isApple = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+}
+
+// --------- PLATFORM / BROWSER DETECTION ----------
+const userAgent = navigator.userAgent;
+
+const isApple =
+  /iphone|ipad|ipod/i.test(userAgent) ||
+  (navigator.platform === 'MacIntel' &&
+   navigator.maxTouchPoints > 1);
+
+const isChromeIOS =
+  isApple &&
+  /CriOS/i.test(userAgent);
+
+const isSafariIOS =
+  isApple &&
+  /Safari/i.test(userAgent) &&
+  !/CriOS/i.test(userAgent) &&
+  !/FxiOS/i.test(userAgent) &&
+  !/EdgiOS/i.test(userAgent);
+
+const isStandalone =
+  window.matchMedia('(display-mode: standalone)').matches
   || window.navigator.standalone === true;
 
 // --------- FACEBOOK BROWSER DETECTION ----------
-const ua = navigator.userAgent;
 
 const isFacebookBrowser =
-    ua.includes("FB")
-    || ua.includes("FBAN")
-    || ua.includes("FBAV")
-    || ua.includes("FB_IAB");
+    userAgent.includes("FB")
+    || userAgent.includes("FBAN")
+    || userAgent.includes("FBAV")
+    || userAgent.includes("FB_IAB");
 
 function showFacebookBrowserMessage() {
 
@@ -105,16 +137,13 @@ function showFacebookBrowserMessage() {
             ">
 
                 You're currently using Facebook's built-in
-                limited browser.
+                limited web browser.
 
                 <br><br>
 
-                Tap the top corner menu (⋮ or ⋯) and<br>
-                Select "Open in external browser"</b>
-
-                <br><br>
-
-                for the best Purple App experience!
+                Tap the top corner menu (⋮ or ⋯) and select
+                "Open in external browser" for the best
+                Purple Painted Lady Festival App experience!
 
             </div>
 
@@ -294,7 +323,7 @@ overlay.innerHTML = `
     <!-- STEP 1 -->
     <div class="ios-install-step">
       <div class="ios-install-step-text">
-        1. Tap <b>⋯</b> below and "Share".
+        1. Tap menu <span style="font-size:1.5em; font-weight:bold;">⋯</span> below and "Share".
       </div>
 
       <img
@@ -350,6 +379,101 @@ overlay.innerHTML = `
 `;
 
   document.body.appendChild(overlay);
+}
+
+function showChromeIOSInstallInstructions(){
+
+  // prevent duplicates
+  if (document.getElementById('chromeIOSInstallOverlay')){
+    return;
+  }
+
+  const overlay = document.createElement('div');
+
+  overlay.id = 'iosInstallOverlay';
+
+  overlay.innerHTML = `
+
+    <div class="ios-install-sheet">
+
+      <div class="ios-install-title">
+        Install the Purple App
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="ios-install-step">
+
+        <div class="ios-install-step-text">
+          1. Tap the <b>Share</b> button above.
+        </div>
+
+        <img
+          class="ios-install-image"
+          src="/static/icons/install/chrome_share.webp"
+          alt="Tap Share in Chrome"
+        >
+
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="ios-install-step">
+
+        <div class="ios-install-step-text">
+          2. Tap <b>"Add to Home Screen"</b>.
+        </div>
+
+        <img
+          class="ios-install-image"
+          src="/static/icons/install/chrome_add_home.webp"
+          alt="Tap Add to Home Screen"
+        >
+
+      <div class="ios-install-note">
+        Don't see it? Tap "View More", then scroll down.
+      </div>
+
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="ios-install-step">
+
+        <div class="ios-install-step-text">
+          3. Tap <b>"Add"</b>.
+        </div>
+
+        <img
+          class="ios-install-image"
+          src="/static/icons/install/chrome_add_save.webp"
+          alt="Tap Add"
+        >
+
+      </div>
+
+      <div class="ios-install-open">
+        Open the app using the Purple icon.
+      </div>
+
+      <button
+        class="ios-install-close"
+        onclick="closeChromeIOSInstallInstructions()"
+      >
+        Close
+      </button>
+
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+}
+
+function closeChromeIOSInstallInstructions(){
+
+  const overlay =
+    document.getElementById('iosInstallOverlay');
+
+  if (overlay){
+    overlay.remove();
+  }
 }
 
 function closeInstallInstructions(){
@@ -1797,7 +1921,7 @@ if (cachedPages.includes(page)) {
       about: "Sat-Sun Sept 19-20, 2026",
       times: "Have a Great Purple Day",
       demos: "See, Learn & Try New DIY Upcycling Products",
-      directions: "The Best Way to a Great Purple Day!!",
+      directions: "The Best Way to a Great <br> Purple Day!!",
       parade: 'Saturday, August 15th 4PM',
       tasting: 'Gourmet Food & Drink from Across the Finger Lakes'
     };
@@ -3237,10 +3361,10 @@ async function showMap(options = {}){
 </div>
 
 <div class="gps-status">
-  Pinch/Spread to Zoom. Tap Icons for Details!
+  Pinch/Spread to Zoom. Tap Icons for Details.
 </div>
 <div class="gps-status">
-  Favorite Vendors are Highlighted. Zones Show Counts.
+  Favorite Vendors are Highlighted in Zones.
 </div>
 <div id="gpsStatus" class="gps-status">
   GPS Location Dot Will Appear When at Festival
@@ -6442,6 +6566,10 @@ async function initializeWelcomeCard() {
 
 window.addEventListener("load", async () => {
 
+  setTimeout(() => {
+    CacheManager.startBackgroundSync();
+  }, 5000);
+
   initializeInstallUI();
   showFacebookBrowserMessage();
 
@@ -6492,15 +6620,22 @@ async function installApp(){
     timestamp: Date.now()
   });
 
-  // iPhone/iPad
-  if (isApple){
+// Safari on iPhone/iPad
+if (isSafariIOS){
 
-    showInstallInstructions();
-    return;
-  }
+  showInstallInstructions();
+  return;
+}
 
-  // Android / Chrome
-  if (deferredInstallPrompt){
+// Chrome on iPhone/iPad
+if (isChromeIOS){
+
+  showChromeIOSInstallInstructions();
+  return;
+}
+
+// Android / Chrome
+if (deferredInstallPrompt){
 
     deferredInstallPrompt.prompt();
 

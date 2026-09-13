@@ -1121,17 +1121,18 @@ button:active {
     box-shadow:
         0 3px 8px rgba(0,0,0,0.18);
     background: #ffffff;
-    padding: 12px 12px 12px 12px;
+    padding: 0;
+    margin-top: 8px;
 }
 
 /* Actual image */
 .parade-map {
     display: block;
-    width: 75%;
+    width: 100%;
     max-width: 900px;
     height: auto;
     object-fit: contain;
-    margin-bottom: 16px;
+    margin-bottom: 0;
 }
 
 /* EVENT CARD */
@@ -1203,18 +1204,6 @@ button:active {
   margin-top: 4px;
 }
 
-/* iOS INSTALL OVERLAY */
-
-#iosInstallOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: 99999;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: calc(env(safe-area-inset-top) + 12px);
-}
 /* =========================================================
    iOS INSTALL OVERLAY
    ========================================================= */
@@ -1230,8 +1219,9 @@ button:active {
   justify-content: center;
 
   padding-top: calc(env(safe-area-inset-top) + 12px);
-}
 
+  box-sizing: border-box;
+}
 
 /* INSTALL SHEET */
 
@@ -1273,13 +1263,12 @@ button:active {
   margin-top: 8px;
 }
 
-
 /* STEP TEXT */
 
 .ios-install-step-text {
   line-height: 1.15;
+  text-align: left;
 }
-
 
 /* SMALL SCREENSHOT */
 
@@ -1603,6 +1592,12 @@ button:active {
 .voice-button.listening{
     background:#d22;
     border-color:#d22;
+}
+
+.voice-button.voice-unsupported{
+    background:#999;
+    border-color:#999;
+    opacity:0.65;
 }
 
 .search-input:focus {
@@ -2626,4 +2621,54 @@ button:active {
         padding-left: 1px;
         padding-right: 1px;
     }
+}
+
+/* ---------------------------------------------------------
+   INITIAL APP DATA LOADING MESSAGE
+   Appears only when startup data takes unusually long.
+   Does not affect page layout.
+   --------------------------------------------------------- */
+
+#initialDataLoadingMessage {
+  position: fixed;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 80%;
+  max-width: 360px;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+
+  background: #ffffff;
+  color: #5c249c;
+
+  border: 2px solid #5c249c;
+  border-radius: 12px;
+
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+
+  text-align: center;
+
+  z-index: 900;
+
+  pointer-events: none;
+}
+
+#initialDataLoadingMessage .loading-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+#initialDataLoadingMessage .loading-text {
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+/* Chrome on iPhone/iPad:
+   keep the install control completely out of page layout */
+#installContainer {
+  position: absolute;
 }

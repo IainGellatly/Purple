@@ -23,12 +23,15 @@ const CACHED_RESOURCES = [
 
 class CacheManagerClass {
 
-    constructor() {
-      this.db = null;
-      this.dbReady = null;
-      this.syncTimer = null;
-      this.mediaUrls = new Map();
-    }
+constructor() {
+  this.db = null;
+  this.dbReady = null;
+  this.syncTimer = null;
+  this.mediaUrls = new Map();
+
+  // Promise that resolves when the initial startup sync is finished
+  this.initialSyncReady = null;
+}
 
 async init() {
 
@@ -44,16 +47,27 @@ async init() {
 
     this.db = await this.dbReady;
 
-    if (!await this.getMetadata("install_time")) {
-            await this.setMetadata(
-                "install_time",
-                Date.now()
+    console.log("CacheManager initialized");
+
+    // Do not make application startup wait for install_time.
+    this.getMetadata("install_time")
+        .then(async installTime => {
+            if (!installTime) {
+                await this.setMetadata(
+                    "install_time",
+                    Date.now()
+                );
+            }
+        })
+        .catch(err => {
+            console.warn(
+                "Could not initialize install_time:",
+                err
             );
-        }
+        });
 
-        console.log("CacheManager initialized");
+    this.initialSyncReady = Promise.resolve();
 
-        this.startBackgroundSync();
     }
 
     async registerDeviceFirstSeen(deviceId) {
@@ -106,7 +120,7 @@ async init() {
 
             if (
                 !lastCheck ||
-                (now - lastCheck) > 120000
+                (now - lastCheck) > 60000
             ) {
 
                 console.log(
@@ -211,15 +225,6 @@ async init() {
                 );
             }
 
-            // Download the latest vote results if we are online.
-            // If we are offline, keep whatever is already cached.
-
-            try {
-                await this.refreshVoteResults();
-            } catch (err) {
-                // Offline - cached vote results remain available.
-            }
-
             await this.syncAnalytics();
             await this.syncSurveys();
             await this.syncVotes();
@@ -242,7 +247,7 @@ async init() {
                 Date.now()
             );
 
-        }, 120000);
+        }, 60000);
 
         this.analyticsTimer = setInterval(() => {
 
@@ -251,7 +256,7 @@ async init() {
             this.syncVotes();
             this.syncAlerts();
 
-        }, 120000);
+        }, 60000);
     }
 
   openDB() {
