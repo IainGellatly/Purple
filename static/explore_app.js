@@ -7,6 +7,9 @@ let exploreMode = "artist";
 let foodVendors = [];
 let foodSearchActive = false;
 
+// Show all artists when the Explore Artists page opens.
+const SHOW_ALL_ARTISTS_INITIALLY = true;
+
 // ---------- App startup ----------
 
 async function initializeExplore(mode = "artist") {
@@ -176,24 +179,35 @@ function buildSearchIndex() {
 
 function performSearch(text) {
     const query = text.trim();
+
     foodSearchActive =
         exploreMode === "food" && query !== "";
 
     if (query === "") {
-        searchResults = [];
+
+        if (exploreMode === "artist" && SHOW_ALL_ARTISTS_INITIALLY) {
+
+            // Artists = artisan vendors only.
+            searchResults = exploreVendors.filter(v =>
+                String(v.vendor_type || "").toLowerCase() === "artisan"
+            );
+
+        } else {
+            searchResults = [];
+        }
+
     } else {
+
         searchResults = miniSearch.search(query, {
             prefix: true,
             fuzzy: 0.2
         });
 
         /*
-         * In Food mode the same MiniSearch index is used, but
-         * search results are restricted to food vendors.
-         * MiniSearch results only contain storeFields, so use
-         * vendor_id to recover the complete vendor objects.
+         * Keep Food searches restricted to food vendors.
          */
         if (exploreMode === "food") {
+
             const foodIds = new Set(
                 foodVendors.map(v => v.vendor_id)
             );
@@ -201,6 +215,21 @@ function performSearch(text) {
             searchResults = searchResults.filter(result =>
                 foodIds.has(result.vendor_id)
             );
+
+        } else {
+
+            /*
+             * Keep Artist searches restricted to non-food vendors.
+             */
+            searchResults = searchResults.filter(result => {
+
+                const vendor = exploreVendors.find(
+                    v => v.vendor_id === result.vendor_id
+                );
+
+                return vendor &&
+                    String(vendor.vendor_type || "").toLowerCase() === "artisan";
+            });
         }
     }
 
@@ -235,7 +264,7 @@ function displayResults() {
             );
         }
         else if (currentTab === "favorites") {
-            vendorsToDisplay = foodVendors.filter(v =>
+            vendorsToDisplay = exploreVendors.filter(v =>
                 favoriteVendorIds.has(v.vendor_id)
             );
         }
@@ -481,7 +510,7 @@ function updateTabCounts() {
         document.getElementById("drinks-tab").textContent =
             `Drinks (${foodVendors.filter(v => String(v.vendor_type || "").toLowerCase() === "drink").length})`;
         document.getElementById("favorites-tab").textContent =
-            `Favorites (${foodVendors.filter(v => favoriteVendorIds.has(v.vendor_id)).length})`;
+            `Favorites (${favoriteVendorIds.size})`;
         return;
     }
 
