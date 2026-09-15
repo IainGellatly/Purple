@@ -105,6 +105,23 @@ const isStandalone =
   window.matchMedia('(display-mode: standalone)').matches
   || window.navigator.standalone === true;
 
+// ============================================================
+// NATIVE iOS STANDALONE SEARCH KEYBOARD
+//
+// true  = use native iOS keyboard for Apple Safari installed app
+// false = restore the existing custom keyboard/microphone behavior
+//
+// This affects ONLY iPhone/iPad Safari running as an installed
+// Home Screen app. All other platforms remain unchanged.
+// ============================================================
+const ENABLE_NATIVE_IOS_STANDALONE_KEYBOARD = true;
+
+const useNativeIOSKeyboard =
+  ENABLE_NATIVE_IOS_STANDALONE_KEYBOARD &&
+  isApple &&
+  isSafariIOS &&
+  isStandalone;
+
 // --------- FACEBOOK BROWSER DETECTION ----------
 
 const isFacebookBrowser =
@@ -839,6 +856,7 @@ async function loadExplore(page = "artist") {
 
             <div class="search-row">
 
+                ${useNativeIOSKeyboard ? "" : `
                 <button
                     id="voice-button"
                     class="voice-button"
@@ -846,15 +864,20 @@ async function loadExplore(page = "artist") {
                     aria-label="Talk to search">
                     🎤
                 </button>
+                `}
 
                 <div class="search-controls">
 
                     <input
                         id="virtual-input"
                         type="text"
-                        readonly
+                        ${useNativeIOSKeyboard ? "" : "readonly"}
                         placeholder="Enter names, products, interests..."
-                        class="search-input">
+                        class="search-input"
+                        inputmode="search"
+                        autocomplete="off"
+                        autocorrect="off"
+                        spellcheck="false">
 
                     ${isFood ? `
                     <div class="food-search-hint">
@@ -1021,7 +1044,7 @@ async function loadExplore(page = "artist") {
 
             </button>
 
-
+            ${useNativeIOSKeyboard ? "" : `
             <!-- Explore keyboard -->
 
             <div
@@ -1034,6 +1057,7 @@ async function loadExplore(page = "artist") {
                 </div>
 
             </div>
+            `}
 
         `;
 
@@ -1774,22 +1798,6 @@ async function loadParking() {
 
 <div class="ui-card">
     <div class="ui-card-media">
-      <img src="/static/icons/van.webp" alt=van>
-    </div>
-    <div class="ui-card-content">
-        <div class="ui-card-title">
-            No Smoking or Pets Please
-        </div>
-        <div class="ui-card-body">
-            <p>
-                This is a no smoking or vaping event held on private property. Please leave those items and your pets at home. Thanks!
-            </p>
-        </div>
-    </div>
-</div>
-
-<div class="ui-card">
-    <div class="ui-card-media">
       <img src="/static/icons/van.webp" alt="van">
     </div>
     <div class="ui-card-content">
@@ -1801,7 +1809,7 @@ async function loadParking() {
                 <b>Tap below to mark your parking spot</b>
             </p>
             <p>
-                Check the <b>Map</b> above when you leave for location and distance!
+                Check <b>Map</b> in main menu when you leave for location and distance!
             </p>
         </div>
     </div>
@@ -1821,10 +1829,25 @@ async function loadParking() {
 
 </button>
 
-
 <div
     id="parking-status"
     class="parking-status">
+</div>
+
+<div class="ui-card">
+    <div class="ui-card-media">
+      <img src="/static/icons/van.webp" alt=van>
+    </div>
+    <div class="ui-card-content">
+        <div class="ui-card-title">
+            No Smoking or Pets Please
+        </div>
+        <div class="ui-card-body">
+            <p>
+                This is a no smoking or vaping event held on private property. Please leave those items and your pets at home. Thanks!
+            </p>
+        </div>
+    </div>
 </div>
 
         `;
@@ -3030,7 +3053,7 @@ let h = `
 
     <div class="ticket-header-text">
 
-      <div class="ticket-header-title">
+      <div class="ticket-header-title" style="font-size:1.45em;">
         Free Coffee Coupon
       </div>
 

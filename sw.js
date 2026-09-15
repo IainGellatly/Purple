@@ -1,4 +1,4 @@
-const APP_VERSION = 298;
+const APP_VERSION = 305;
 
 self.addEventListener("message", event => {
 

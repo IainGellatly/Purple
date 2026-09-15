@@ -320,6 +320,19 @@ function initializeExploreKeyboard() {
 
     }
 
+    /*
+     * Native iOS standalone mode:
+     *
+     * Use the real editable input and the iOS keyboard.
+     * Do not initialize the custom keyboard or Web Speech button.
+     */
+    if (useNativeIOSKeyboard) {
+        inputElement.removeAttribute("readonly");
+        inputElement.type = "text";
+        containerElement.style.display = "none";
+        return;
+    }
+
     const voiceButton =
         document.getElementById("voice-button");
 

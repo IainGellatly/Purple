@@ -571,7 +571,7 @@ async def submit_vote(request: Request):
                 early_sql = f'''
                     select 1 from device_first_seen 
                     where device_id = "{device_id}" 
-                    and timestampdiff(second, first_seen, now()) < 180;
+                    and timestampdiff(second, first_seen, now()) < 60;
                 '''
                 early_vote = await get_data(early_sql)
 
